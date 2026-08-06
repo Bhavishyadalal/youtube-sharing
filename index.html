@@ -647,6 +647,7 @@
             margin-top: 12px; padding: 10px 12px; border-radius: 10px;
             background: rgba(255,92,92,0.08); border: 1px solid rgba(255,92,92,0.3);
             color: #ff9d9d; font-size: 12px; line-height: 1.5; text-align: left;
+            white-space: pre-wrap;
         }
         .conn-error-note button {
             display: inline; background: none; border: none; padding: 0; margin-left: 4px;
@@ -1468,6 +1469,11 @@
     // right on the join screen — including on a phone where nobody can
     // realistically open devtools. If "relay" never shows a checkmark, the
     // TURN server isn't actually working and that's the real bug to chase.
+    // Keeps the last rendered diagnostic line accessible even after the
+    // element that showed it live gets replaced by the final error message —
+    // so "why did this fail" doesn't require catching it in the ~15s window.
+    const lastIceDiag = {};
+
     function attachIceDiagnostics(connObj, elId) {
         const el = document.getElementById(elId);
         if (!el || !connObj) return;
@@ -1491,8 +1497,10 @@
             } else if ((state === 'checking' || state === 'new') && !gotRelay && pc.iceGatheringState === 'complete') {
                 hint = ' — gathering finished with no relay candidate. If host/srflx also never connect, this device\'s network is blocking WebRTC.';
             }
-            el.innerText = bits.join('  ·  ') + hint;
+            const line = bits.join('  ·  ') + hint;
+            el.innerText = line;
             el.style.display = 'block';
+            lastIceDiag[elId] = line;
         };
 
         const tryAttach = () => {
@@ -1536,8 +1544,10 @@
             try { if (conn) conn.close(); } catch (e) { /* already gone */ }
             const btn = document.getElementById('join-btn');
             if (btn) { btn.disabled = false; btn.innerText = 'Join room'; }
+            const diag = lastIceDiag['join-diag-note'];
             showJoinError("Couldn't connect — double-check the code is right and both of you are online. " +
-                'If it keeps happening, one of you may be on a network (office/campus wifi, some mobile carriers) that blocks direct connections.');
+                'If it keeps happening, one of you may be on a network (office/campus wifi, some mobile carriers) that blocks direct connections.' +
+                (diag ? ('\n\nLast known status: ' + diag) : ''));
         }, 15000);
     }
     function clearJoinTimeout() {
