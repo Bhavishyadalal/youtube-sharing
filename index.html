@@ -1,7 +1,4 @@
 <!DOCTYPE html>
-<!-- NW-BUILD-MARKER: 2026-08-07-A — view-source your deployed URL and search
-     for this exact string. If it's missing, Vercel is serving an OLDER file
-     than this one and that (not WebRTC) is the actual bug to fix first. -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -647,16 +644,11 @@
             margin-top: 12px; padding: 10px 12px; border-radius: 10px;
             background: rgba(255,92,92,0.08); border: 1px solid rgba(255,92,92,0.3);
             color: #ff9d9d; font-size: 12px; line-height: 1.5; text-align: left;
-            white-space: pre-wrap;
         }
         .conn-error-note button {
             display: inline; background: none; border: none; padding: 0; margin-left: 4px;
             color: var(--marquee); font-size: 12px; font-weight: 600; text-decoration: underline;
             cursor: pointer;
-        }
-        .join-diag-note {
-            margin-top: 10px; font-size: 10.5px; line-height: 1.6; color: var(--text-faint);
-            text-align: left; word-break: break-word;
         }
 
         .chat-area {
@@ -848,7 +840,6 @@
                     <div class="waiting-dot" id="waiting-dot"></div>
                     <span id="waiting-label">Send this to your friend, then wait here</span>
                 </div>
-                <div class="join-diag-note mono" id="host-diag-note" style="display:none;"></div>
                 <div class="conn-error-note" id="broker-error-note" style="display:none;"></div>
             </div>
         </div>
@@ -858,7 +849,6 @@
             <input type="text" id="peer-id-input" inputmode="numeric" maxlength="5" placeholder="00000">
             <button class="btn btn-primary" id="join-btn" onclick="connectToPeer()" style="width: 100%; margin-top: 12px;">Join room</button>
             <div class="conn-error-note" id="join-error-note" style="display:none;"></div>
-            <div class="join-diag-note mono" id="join-diag-note" style="display:none;"></div>
         </div>
 
         <button class="landing-skip" onclick="enterApp()">Continue without a friend for now →</button>
@@ -1080,7 +1070,6 @@
 </div>
 
 <script>
-    console.log('%cNW-BUILD-MARKER: 2026-08-07-A', 'color:#ffb020;font-weight:bold;');
     /* ================= Peer connection (5-digit room codes) ================= */
     let player, conn, peer;
     let queue = [];
@@ -1191,7 +1180,7 @@
             }
         });
 
-        peer.on('connection', c => { conn = c; setupConn(); attachIceDiagnostics(c, 'host-diag-note'); });
+        peer.on('connection', c => { conn = c; setupConn(); });
 
         // incoming media call handler
         peer.on('call', async (incoming) => {
@@ -1461,75 +1450,6 @@
         });
         setupConn();
         startJoinTimeout();
-        attachIceDiagnostics(conn, 'join-diag-note');
-    }
-
-    // Shows exactly which ICE candidate types get gathered (host / srflx /
-    // relay) and how the underlying RTCPeerConnection's state evolves, live,
-    // right on the join screen — including on a phone where nobody can
-    // realistically open devtools. If "relay" never shows a checkmark, the
-    // TURN server isn't actually working and that's the real bug to chase.
-    // Keeps the last rendered diagnostic line accessible even after the
-    // element that showed it live gets replaced by the final error message —
-    // so "why did this fail" doesn't require catching it in the ~15s window.
-    const lastIceDiag = {};
-
-    function attachIceDiagnostics(connObj, elId) {
-        const el = document.getElementById(elId);
-        if (!el || !connObj) return;
-        let gotHost = false, gotSrflx = false, gotRelay = false;
-        let attempts = 0;
-
-        const render = (pc) => {
-            const bits = [
-                'ICE: ' + (pc.iceConnectionState || '?'),
-                'gather: ' + (pc.iceGatheringState || '?'),
-                'candidates — host:' + (gotHost ? '✓' : '…') + ' srflx:' + (gotSrflx ? '✓' : '…') + ' relay:' + (gotRelay ? '✓' : '…')
-            ];
-            let hint = '';
-            const state = pc.iceConnectionState;
-            if (state === 'connected' || state === 'completed') {
-                hint = ' — connected ✓';
-            } else if (state === 'failed') {
-                hint = gotRelay
-                    ? ' — the relay server itself may be down or overloaded (it\'s a free shared service). Try again in a minute.'
-                    : ' — no relay candidate was ever found. This network is likely blocking the TURN relay outright (corporate/school wifi and some carriers do this).';
-            } else if ((state === 'checking' || state === 'new') && !gotRelay && pc.iceGatheringState === 'complete') {
-                hint = ' — gathering finished with no relay candidate. If host/srflx also never connect, this device\'s network is blocking WebRTC.';
-            }
-            const line = bits.join('  ·  ') + hint;
-            el.innerText = line;
-            el.style.display = 'block';
-            lastIceDiag[elId] = line;
-        };
-
-        const tryAttach = () => {
-            const pc = connObj.peerConnection;
-            if (!pc) {
-                attempts++;
-                if (attempts < 40) setTimeout(tryAttach, 250); // ~10s max wait for PeerJS to spin up the RTCPeerConnection
-                return;
-            }
-            pc.addEventListener('icecandidate', e => {
-                if (!e.candidate) { render(pc); return; }
-                const c = e.candidate.candidate || '';
-                if (c.includes(' typ host')) gotHost = true;
-                else if (c.includes(' typ srflx')) gotSrflx = true;
-                else if (c.includes(' typ relay')) gotRelay = true;
-                render(pc);
-            });
-            pc.addEventListener('iceconnectionstatechange', () => render(pc));
-            pc.addEventListener('icegatheringstatechange', () => render(pc));
-            render(pc);
-        };
-        tryAttach();
-    }
-
-    function clearJoinDiag() {
-        const joinEl = document.getElementById('join-diag-note');
-        if (joinEl) { joinEl.style.display = 'none'; joinEl.innerText = ''; }
-        const hostEl = document.getElementById('host-diag-note');
-        if (hostEl) { hostEl.style.display = 'none'; hostEl.innerText = ''; }
     }
 
     // A dropped ICE negotiation (e.g. both sides behind strict/symmetric NAT
@@ -1544,10 +1464,8 @@
             try { if (conn) conn.close(); } catch (e) { /* already gone */ }
             const btn = document.getElementById('join-btn');
             if (btn) { btn.disabled = false; btn.innerText = 'Join room'; }
-            const diag = lastIceDiag['join-diag-note'];
             showJoinError("Couldn't connect — double-check the code is right and both of you are online. " +
-                'If it keeps happening, one of you may be on a network (office/campus wifi, some mobile carriers) that blocks direct connections.' +
-                (diag ? ('\n\nLast known status: ' + diag) : ''));
+                'If it keeps happening, one of you may be on a network (office/campus wifi, some mobile carriers) that blocks direct connections.');
         }, 15000);
     }
     function clearJoinTimeout() {
@@ -1571,7 +1489,6 @@
         reconnectAttempts = 0;
         clearJoinTimeout();
         clearJoinError();
-        clearJoinDiag();
         if (conn) { conn.close(); conn = null; }
         setStatus(false);
         const joinBtn = document.getElementById('join-btn');
