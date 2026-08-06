@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<!-- NW-BUILD-MARKER: 2026-08-07-A — view-source your deployed URL and search
+     for this exact string. If it's missing, Vercel is serving an OLDER file
+     than this one and that (not WebRTC) is the actual bug to fix first. -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1076,6 +1079,7 @@
 </div>
 
 <script>
+    console.log('%cNW-BUILD-MARKER: 2026-08-07-A', 'color:#ffb020;font-weight:bold;');
     /* ================= Peer connection (5-digit room codes) ================= */
     let player, conn, peer;
     let queue = [];
@@ -1476,7 +1480,18 @@
                 'gather: ' + (pc.iceGatheringState || '?'),
                 'candidates — host:' + (gotHost ? '✓' : '…') + ' srflx:' + (gotSrflx ? '✓' : '…') + ' relay:' + (gotRelay ? '✓' : '…')
             ];
-            el.innerText = bits.join('  ·  ');
+            let hint = '';
+            const state = pc.iceConnectionState;
+            if (state === 'connected' || state === 'completed') {
+                hint = ' — connected ✓';
+            } else if (state === 'failed') {
+                hint = gotRelay
+                    ? ' — the relay server itself may be down or overloaded (it\'s a free shared service). Try again in a minute.'
+                    : ' — no relay candidate was ever found. This network is likely blocking the TURN relay outright (corporate/school wifi and some carriers do this).';
+            } else if ((state === 'checking' || state === 'new') && !gotRelay && pc.iceGatheringState === 'complete') {
+                hint = ' — gathering finished with no relay candidate. If host/srflx also never connect, this device\'s network is blocking WebRTC.';
+            }
+            el.innerText = bits.join('  ·  ') + hint;
             el.style.display = 'block';
         };
 
