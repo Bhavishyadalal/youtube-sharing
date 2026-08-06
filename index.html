@@ -342,6 +342,76 @@
         .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
         .btn-ghost:hover { background: var(--surface-hi); border-color: var(--marquee); }
 
+        /* ---------- Search YouTube modal ---------- */
+        .search-overlay {
+            position: fixed; inset: 0; z-index: 120;
+            background: rgba(4, 4, 8, 0.72); backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+        }
+        .search-overlay.open { opacity: 1; pointer-events: auto; }
+        .search-modal {
+            width: 100%; max-width: 760px; max-height: 84vh; display: flex; flex-direction: column;
+            background: var(--film); border: 1px solid var(--border); border-radius: 18px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+            transform: translateY(14px) scale(0.98); transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            overflow: hidden;
+        }
+        .search-overlay.open .search-modal { transform: translateY(0) scale(1); }
+        .search-modal-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 18px 20px; border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+        }
+        .search-modal-head h2 { font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .search-modal-head .yt-badge {
+            font-family: 'Inter', sans-serif; font-weight: 600; font-size: 10px; letter-spacing: 0.06em;
+            padding: 3px 8px; border-radius: 999px; color: var(--marquee-ink);
+            background: linear-gradient(135deg, var(--marquee), var(--marquee2));
+        }
+        .search-modal-close {
+            width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--border);
+            background: transparent; color: var(--text-dim); cursor: pointer; font-size: 15px;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .search-modal-close:hover { background: var(--surface-hi); color: var(--text); }
+        .search-modal-body { padding: 16px 20px 20px; overflow-y: auto; }
+        .search-bar-row { display: flex; gap: 8px; margin-bottom: 6px; }
+        .search-bar-row input[type="text"] { flex: 1; }
+        .search-status { font-size: 13px; color: var(--text-faint); padding: 10px 2px; text-align: center; }
+        .search-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+        .search-result-card {
+            cursor: pointer; border-radius: 12px; border: 1px solid var(--border); background: var(--surface);
+            overflow: hidden; transition: 0.2s; text-align: left; padding: 0;
+        }
+        .search-result-card:hover { border-color: var(--marquee); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,0.35); }
+        .search-result-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #000; }
+        .search-result-meta { padding: 9px 10px 11px; }
+        .search-result-meta .r-title {
+            font-size: 12.5px; font-weight: 500; line-height: 1.35; margin-bottom: 4px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .search-result-meta .r-channel { font-size: 11px; color: var(--text-faint); }
+
+        /* ---------- Pick action popup (Play now / Add to queue) ---------- */
+        .pick-overlay {
+            position: fixed; inset: 0; z-index: 130;
+            background: rgba(4, 4, 8, 0.6); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+            opacity: 0; pointer-events: none; transition: opacity 0.18s ease;
+        }
+        .pick-overlay.open { opacity: 1; pointer-events: auto; }
+        .pick-card {
+            width: 100%; max-width: 360px; background: var(--film); border: 1px solid var(--border);
+            border-radius: 16px; padding: 16px; transform: scale(0.96); transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .pick-overlay.open .pick-card { transform: scale(1); }
+        .pick-card img { width: 100%; border-radius: 10px; aspect-ratio: 16/9; object-fit: cover; margin-bottom: 10px; background: #000; }
+        .pick-card .p-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+        .pick-card .p-channel { font-size: 11.5px; color: var(--text-faint); margin-bottom: 14px; }
+        .pick-actions { display: flex; gap: 8px; }
+        .pick-actions .btn { flex: 1; padding: 11px 10px; }
+
         /* ---------- Reel (queue) ---------- */
         .reel-section { margin-top: 18px; padding: 16px 18px 18px; }
         .reel-heading { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
@@ -621,6 +691,38 @@
 </div>
 <div class="ember-field" id="ember-field"></div>
 
+<!-- ================= Search YouTube modal ================= -->
+<div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search YouTube">
+    <div class="search-modal">
+        <div class="search-modal-head">
+            <h2>Search <span class="yt-badge">YouTube</span></h2>
+            <button class="search-modal-close" onclick="closeSearchModal()" aria-label="Close search">✕</button>
+        </div>
+        <div class="search-modal-body">
+            <div class="search-bar-row">
+                <input type="text" id="search-input" placeholder="Search for anything...">
+                <button class="btn btn-primary" onclick="runYoutubeSearch()">Search</button>
+            </div>
+            <div class="search-status" id="search-status">Search for a video to get started.</div>
+            <div class="search-results-grid" id="search-results"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Play now / Add to queue popup ================= -->
+<div class="pick-overlay" id="pick-overlay" role="dialog" aria-modal="true" aria-label="Choose an action">
+    <div class="pick-card">
+        <img id="pick-thumb" src="" alt="">
+        <div class="p-title" id="pick-title"></div>
+        <div class="p-channel" id="pick-channel"></div>
+        <div class="pick-actions">
+            <button class="btn btn-primary" onclick="confirmPlayNow()">▶ Play now</button>
+            <button class="btn btn-ghost" onclick="confirmAddToQueue()">➕ Add to queue</button>
+        </div>
+        <button class="btn btn-ghost" style="width:100%; margin-top: 8px;" onclick="closePickPopup()">Cancel</button>
+    </div>
+</div>
+
 <div class="marquee-bar">
     <div class="wordmark">
         <div class="bulbs">
@@ -664,6 +766,7 @@
             </button>
             <button class="btn btn-primary" onclick="loadVideo()">Play</button>
             <button class="btn btn-ghost" onclick="addToQueue()">Queue</button>
+            <button class="btn btn-ghost" onclick="openSearchModal()" title="Search YouTube">🔍 Search</button>
         </div>
 
         <div class="glass reel-section">
@@ -830,9 +933,30 @@
             playerVars: { 'enablejsapi': 1, 'origin': window.location.origin },
             events: {
                 onStateChange: onPlayerStateChange,
-                onReady: () => { playerReady = true; }
+                onReady: () => { playerReady = true; },
+                onError: onPlayerError
             }
         });
+    }
+
+    // YT player error codes: 2 = invalid video id, 5 = HTML5 player error,
+    // 100 = video not found/private, 101 & 150 = embedding disabled by the
+    // video's owner (150 is the same as 101, just returned by some clients).
+    // This can happen even after the videoEmbeddable=true search filter (the
+    // owner can change that setting after the fact) or with a manually pasted
+    // link, so surface a clear message instead of a silent "Video unavailable".
+    function onPlayerError(e) {
+        const code = e && e.data;
+        let msg = 'That video could not be played.';
+        if (code === 101 || code === 150) {
+            msg = 'This video\'s owner has disabled it from playing on other sites — try a different result.';
+        } else if (code === 100) {
+            msg = 'That video is private or has been removed.';
+        } else if (code === 2) {
+            msg = 'That link doesn\'t point to a valid video.';
+        }
+        console.warn('YouTube player error', code, msg);
+        updateNowShowing(msg);
     }
 
     /* ================= Sync: play / pause / seek mirror both ways ================= */
@@ -1184,6 +1308,160 @@
             safeSend({ type: 'queue_update', uid: item.uid, title: meta.title });
         });
     }
+
+    /* ================= Search YouTube (themed popup, both users can use it) ================= */
+    // Baked-in fallback so search always works, even if the remote key file is
+    // briefly unreachable. The live key comes from a plain .txt file in the repo,
+    // so it can be swapped any time by editing that file — no redeploy needed.
+    const DEFAULT_YT_API_KEY = 'AIzaSyAiRmr5jFqdHMaGf9JECpEjg-04UpQaiNU';
+    const YT_API_KEY_FILE_URL = 'https://raw.githubusercontent.com/Bhavishyadalal/youtube-sharing/main/api-key.txt';
+    let searchApiKey = DEFAULT_YT_API_KEY;
+
+    (async function loadRemoteApiKey() {
+        try {
+            // Cache-busting query param so an edit to the file is picked up quickly
+            // instead of being served from a stale CDN copy.
+            const res = await fetch(YT_API_KEY_FILE_URL + '?v=' + Date.now());
+            if (!res.ok) return;
+            const text = (await res.text()).trim();
+            if (text) searchApiKey = text;
+        } catch (e) {
+            console.warn('Could not load remote API key file, using built-in fallback key:', e);
+        }
+    })();
+
+    let pendingPick = null; // the search result currently shown in the play/queue popup
+    let searchInFlight = false;
+
+    function openSearchModal() {
+        document.getElementById('search-overlay').classList.add('open');
+        setTimeout(() => document.getElementById('search-input').focus(), 50);
+    }
+    function closeSearchModal() {
+        document.getElementById('search-overlay').classList.remove('open');
+    }
+    // Click on the dark backdrop (not the card itself) closes the modal
+    document.getElementById('search-overlay').addEventListener('click', (e) => {
+        if (e.target.id === 'search-overlay') closeSearchModal();
+    });
+    document.getElementById('search-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') runYoutubeSearch();
+    });
+
+    function setStatusMsg(msg) {
+        const el = document.getElementById('search-status');
+        el.style.display = 'block';
+        el.innerText = msg;
+    }
+
+    async function runYoutubeSearch() {
+        const q = document.getElementById('search-input').value.trim();
+        const resultsEl = document.getElementById('search-results');
+        if (!q) { setStatusMsg('Type something to search for.'); return; }
+        if (searchInFlight) return;
+        searchInFlight = true;
+        resultsEl.innerHTML = '';
+        setStatusMsg('Searching...');
+        try {
+            // videoEmbeddable=true filters out results whose owners have disabled
+            // embedding — without it, search can return videos that play fine on
+            // youtube.com but show "Video unavailable" in this embedded iframe player.
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=16&q=${encodeURIComponent(q)}&key=${encodeURIComponent(searchApiKey)}`;
+            const res = await fetch(url);
+            if (!res.ok) {
+                if (res.status === 403) {
+                    setStatusMsg('Search is temporarily unavailable (API key rejected or quota reached).');
+                } else {
+                    setStatusMsg('Search failed (' + res.status + '). Try again in a moment.');
+                }
+                searchInFlight = false;
+                return;
+            }
+            const data = await res.json();
+            const items = Array.isArray(data.items) ? data.items : [];
+            if (items.length === 0) {
+                setStatusMsg('No results for "' + q + '".');
+                searchInFlight = false;
+                return;
+            }
+            document.getElementById('search-status').style.display = 'none';
+            renderSearchResults(items);
+        } catch (e) {
+            console.error('YouTube search failed:', e);
+            setStatusMsg('Couldn\'t reach YouTube. Check your connection and try again.');
+        }
+        searchInFlight = false;
+    }
+
+    function renderSearchResults(items) {
+        const resultsEl = document.getElementById('search-results');
+        resultsEl.innerHTML = '';
+        items.forEach(it => {
+            if (!it.id || !it.id.videoId) return;
+            const id = it.id.videoId;
+            const title = (it.snippet && it.snippet.title) || id;
+            const channel = (it.snippet && it.snippet.channelTitle) || '';
+            const thumb = (it.snippet && it.snippet.thumbnails &&
+                (it.snippet.thumbnails.medium || it.snippet.thumbnails.default || {}).url)
+                || `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'search-result-card';
+            card.innerHTML = `
+                <img src="${thumb}" alt="" loading="lazy">
+                <div class="search-result-meta">
+                    <div class="r-title">${escapeHtml(title)}</div>
+                    <div class="r-channel">${escapeHtml(channel)}</div>
+                </div>`;
+            card.onclick = () => openPickPopup({ id, title, channel, thumb });
+            resultsEl.appendChild(card);
+        });
+    }
+
+    /* ---- Play now / Add to queue popup shown after picking a search result ---- */
+    function openPickPopup(item) {
+        pendingPick = item;
+        document.getElementById('pick-thumb').src = item.thumb;
+        document.getElementById('pick-title').innerText = item.title;
+        document.getElementById('pick-channel').innerText = item.channel || '';
+        document.getElementById('pick-overlay').classList.add('open');
+    }
+    function closePickPopup() {
+        document.getElementById('pick-overlay').classList.remove('open');
+        pendingPick = null;
+    }
+    document.getElementById('pick-overlay').addEventListener('click', (e) => {
+        if (e.target.id === 'pick-overlay') closePickPopup();
+    });
+
+    function confirmPlayNow() {
+        if (!pendingPick) return;
+        const { id, title } = pendingPick;
+        currentVideoId = id;
+        player.loadVideoById(id);
+        safeSend({ type: 'video', id: id });
+        updateNowShowing(title);
+        closePickPopup();
+        closeSearchModal();
+    }
+
+    function confirmAddToQueue() {
+        if (!pendingPick) return;
+        const { id, title, thumb } = pendingPick;
+        const item = { uid: uid(), id, title, thumb };
+        queue.push(item);
+        renderQueue();
+        safeSend({ type: 'queue_add', item: item });
+        closePickPopup();
+    }
+
+    // Esc closes whichever popup is open, without stealing the shortcut from the player
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (document.getElementById('pick-overlay').classList.contains('open')) closePickPopup();
+        else if (document.getElementById('search-overlay').classList.contains('open')) closeSearchModal();
+    });
 
     function removeFromQueue(index, e) {
         e.stopPropagation();
