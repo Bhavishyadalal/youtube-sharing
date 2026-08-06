@@ -342,6 +342,54 @@
         .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
         .btn-ghost:hover { background: var(--surface-hi); border-color: var(--marquee); }
 
+        /* ---------- Call UI (new) ---------- */
+        .call-section { display: none; gap: 18px; padding: 18px; border-radius: 12px; background: var(--film); border: 1px solid var(--border); position: relative; }
+        .call-section.active { display: block; }
+
+        .call-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+        .call-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+            border-radius: 12px; padding: 14px; display: flex; gap: 12px; align-items: center; border: 1px solid var(--border);
+            position: relative;
+        }
+        .avatar {
+            width: 72px; height: 72px; border-radius: 12px; display:flex; align-items:center; justify-content:center;
+            font-size: 28px; font-weight:700; color: var(--marquee-ink);
+            background: linear-gradient(135deg, var(--marquee), var(--marquee2));
+            flex-shrink:0;
+        }
+        .call-info { flex: 1; }
+        .call-name { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+        .call-status { font-size: 12px; color: var(--text-faint); }
+
+        .speaking { box-shadow: 0 0 28px 6px var(--live-glow); transform: translateY(-3px); transition: 0.12s; }
+        .speaking .avatar { box-shadow: 0 0 22px 6px var(--live-glow); }
+
+        .call-controls { display:flex; gap:10px; margin-top: 12px; align-items:center; }
+        .mic-meter { width: 80px; height: 8px; background: rgba(255,255,255,0.04); border-radius: 6px; overflow: hidden; }
+        .mic-meter-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--marquee), var(--marquee2)); transition: width 0.08s linear; }
+
+        .call-actions { display:flex; gap:8px; margin-top:10px; }
+        .deafened { opacity: 0.55; filter: grayscale(0.2); }
+        .reconnecting { font-style: italic; color: var(--text-faint); }
+
+        .call-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+        .call-top .left { display:flex; gap:10px; align-items:center; }
+
+        .call-footer { display:flex; align-items:center; gap:10px; margin-top:12px; }
+
+        .ptt-hold-btn {
+            min-width: 120px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border); cursor: pointer;
+        }
+        .ptt-hold-btn.active { background: linear-gradient(135deg, var(--marquee), var(--marquee2)); color: var(--marquee-ink); }
+
+        .quality-dot {
+            width: 10px; height: 10px; border-radius: 50%; background: #6aa84f; box-shadow: 0 0 6px rgba(106,168,79,0.18);
+        }
+        .quality-dot.warn { background: #f5a623; box-shadow: 0 0 6px rgba(245,166,35,0.18); }
+        .quality-dot.bad { background: #ff6b6b; box-shadow: 0 0 6px rgba(255,107,107,0.18); }
+
         /* ---------- Search YouTube modal ---------- */
         .search-overlay {
             position: fixed; inset: 0; z-index: 120;
@@ -357,7 +405,6 @@
             transform: translateY(14px) scale(0.98); transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
             overflow: hidden;
         }
-        .search-overlay.open .search-modal { transform: translateY(0) scale(1); }
         .search-modal-head {
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
             padding: 18px 20px; border-bottom: 1px solid var(--border);
@@ -538,6 +585,61 @@
         .btn-danger { background: transparent; border: 1px solid rgba(255,92,92,0.4); color: #ff8a8a; }
         .btn-danger:hover { background: rgba(255,92,92,0.12); border-color: var(--off); box-shadow: 0 0 18px var(--off-glow); }
 
+        .call-button-inline {
+            display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border:1px solid var(--border);
+            cursor:pointer; font-weight:600; color:var(--text); font-size:13px;
+        }
+
+        /* ---------- Landing screen (create / join, shown before entering the app) ---------- */
+        .landing-overlay {
+            position: fixed; inset: 0; z-index: 150;
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+            background:
+                radial-gradient(ellipse 900px 600px at 78% 8%, var(--blob-a), transparent 60%),
+                radial-gradient(ellipse 1200px 800px at 15% 90%, var(--blob-b), transparent 60%),
+                var(--bg);
+            opacity: 1; visibility: visible;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+        .landing-overlay.closed { opacity: 0; visibility: hidden; pointer-events: none; }
+        .landing-card {
+            position: relative;
+            width: 100%; max-width: 460px; text-align: center;
+            padding: 36px 30px 30px; border-radius: 20px;
+            background: var(--surface); border: 1px solid var(--border);
+            backdrop-filter: blur(20px); box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+        }
+        .landing-card .search-modal-close { position: absolute; top: 14px; right: 14px; }
+        .landing-card .wordmark { justify-content: center; margin-bottom: 6px; }
+        .landing-tagline { font-size: 13px; color: var(--text-dim); margin-bottom: 26px; }
+        .landing-card .nickname-row { text-align: left; margin-bottom: 20px; }
+        .landing-card .role-tabs { margin-bottom: 18px; }
+        .landing-card .role-tab {
+            padding: 16px 8px; font-size: 13.5px; border-radius: 10px;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+        }
+        .landing-card .role-panel.active { text-align: left; }
+        .landing-skip {
+            margin-top: 16px; background: none; border: none; cursor: pointer;
+            font-size: 12px; color: var(--text-faint); text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .landing-skip:hover { color: var(--text-dim); }
+
+        /* ---------- Compact room widget shown in the sidebar once the app is open ---------- */
+        .room-summary-idle {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 12px 14px; margin-bottom: 16px; border-radius: 12px;
+            border: 1px dashed var(--border); background: rgba(255,176,32,0.04);
+        }
+        .room-summary-idle .rsi-label { font-size: 11px; color: var(--text-faint); }
+        .room-summary-idle .rsi-code {
+            font-family: 'JetBrains Mono', monospace; font-size: 16px; letter-spacing: 0.12em; color: var(--text);
+        }
+        .room-summary-idle .btn { padding: 8px 12px; font-size: 12px; flex-shrink: 0; }
+
         .chat-area {
             flex: 1; min-height: 200px; max-height: 30vh; overflow-y: auto;
             display: flex; flex-direction: column; gap: 8px; padding-right: 4px;
@@ -691,6 +793,55 @@
 </div>
 <div class="ember-field" id="ember-field"></div>
 
+<!-- ================= Landing screen: create or join, before entering the app ================= -->
+<div class="landing-overlay" id="landing-overlay">
+    <div class="landing-card">
+        <button class="search-modal-close" onclick="enterApp()" aria-label="Close">✕</button>
+        <div class="wordmark">
+            <div class="bulbs">
+                <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
+            </div>
+            <div>
+                <h1>NEXUS<span>WATCH</span></h1>
+            </div>
+        </div>
+        <div class="landing-tagline">A private screening, wherever you are</div>
+
+        <div class="nickname-row">
+            <label class="field-label" for="nickname-input">Your name</label>
+            <input type="text" id="nickname-input" placeholder="You" maxlength="16">
+        </div>
+
+        <div class="role-tabs" id="role-tabs">
+            <button class="role-tab active" id="tab-host" onclick="showRole('host')"><span class="role-tab-icon">🎬</span>Create a room</button>
+            <button class="role-tab" id="tab-join" onclick="showRole('join')"><span class="role-tab-icon">🔑</span>Join a room</button>
+        </div>
+
+        <div class="role-panel active" id="panel-host">
+            <div class="room-code-card">
+                <label class="field-label">Your room code</label>
+                <div class="room-code-value mono" id="my-id-display">•••••</div>
+                <div class="room-code-actions">
+                    <button class="btn btn-primary copy-btn" id="copy-btn" onclick="copyRoomCode(event)">Copy code</button>
+                    <button class="btn btn-ghost copy-btn" id="copy-link-btn" onclick="copyInviteLink(event)">Copy link</button>
+                </div>
+                <div class="waiting-note">
+                    <div class="waiting-dot" id="waiting-dot"></div>
+                    <span id="waiting-label">Send this to your friend, then wait here</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="role-panel" id="panel-join">
+            <label class="field-label" for="peer-id-input">Your friend's 5-digit code</label>
+            <input type="text" id="peer-id-input" inputmode="numeric" maxlength="5" placeholder="00000">
+            <button class="btn btn-primary" id="join-btn" onclick="connectToPeer()" style="width: 100%; margin-top: 12px;">Join room</button>
+        </div>
+
+        <button class="landing-skip" onclick="enterApp()">Continue without a friend for now →</button>
+    </div>
+</div>
+
 <!-- ================= Search YouTube modal ================= -->
 <div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search YouTube">
     <div class="search-modal">
@@ -740,7 +891,14 @@
             <div class="status-dot" id="status-dot"></div>
             <span id="status-label">Offline</span>
         </div>
+
+        <!-- Top bar Call only button (shows live state when in a call) -->
         <button class="theme-toggle" onclick="toggleThemePanel(event)">🎨 <span>Theme</span></button>
+        <button id="call-top-btn" class="call-button-inline" title="Call only" onclick="toggleCallView()">
+            📞 <span id="call-top-label">Call only</span>
+            <span id="call-top-mini" style="margin-left:8px; font-size:11px; color:var(--text-faint); display:none;">(muted)</span>
+        </button>
+
         <div class="theme-panel" id="theme-panel">
             <div class="theme-panel-title"><span>Pick a vibe</span><span class="synced-note">syncs to your friend</span></div>
             <div class="theme-list" id="theme-list"></div>
@@ -750,68 +908,113 @@
 
 <div class="layout">
     <div class="main-col">
-        <div class="screen-frame">
-            <div class="sprocket-strip"></div>
-            <div id="yt-player"></div>
-            <div class="sprocket-strip"></div>
+
+        <!-- Default watch view elements -->
+        <div id="watch-view">
+            <div class="screen-frame" id="screen-frame">
+                <div class="sprocket-strip"></div>
+                <div id="yt-player"></div>
+                <div class="sprocket-strip"></div>
+            </div>
+
+            <div class="glass controls" id="controls">
+                <input type="text" id="url-input" placeholder="Paste a YouTube URL to start the show...">
+                <button class="skip-btn" onclick="skipBy(-10)" title="Back 10 seconds" aria-label="Back 10 seconds">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>
+                </button>
+                <button class="skip-btn" onclick="skipBy(10)" title="Forward 10 seconds" aria-label="Forward 10 seconds">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></svg>
+                </button>
+                <button class="btn btn-primary" onclick="loadVideo()">Play</button>
+                <button class="btn btn-ghost" onclick="addToQueue()">Queue</button>
+                <button class="btn btn-ghost" onclick="openSearchModal()" title="Search YouTube">🔍 Search</button>
+            </div>
+
+            <div class="glass reel-section" id="reel-section">
+                <div class="reel-heading">
+                    <h2>Up Next</h2>
+                    <span id="reel-count">0 in reel</span>
+                </div>
+                <div class="reel-track" id="reel-track">
+                    <div class="reel-empty">Queued clips will line up here — tap one to jump right to it.</div>
+                </div>
+            </div>
         </div>
 
-        <div class="glass controls">
-            <input type="text" id="url-input" placeholder="Paste a YouTube URL to start the show...">
-            <button class="skip-btn" onclick="skipBy(-10)" title="Back 10 seconds" aria-label="Back 10 seconds">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>
-            </button>
-            <button class="skip-btn" onclick="skipBy(10)" title="Forward 10 seconds" aria-label="Forward 10 seconds">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></svg>
-            </button>
-            <button class="btn btn-primary" onclick="loadVideo()">Play</button>
-            <button class="btn btn-ghost" onclick="addToQueue()">Queue</button>
-            <button class="btn btn-ghost" onclick="openSearchModal()" title="Search YouTube">🔍 Search</button>
+        <!-- Call-only view (hidden unless active). It *replaces* the watch view visually but keeps state in memory -->
+        <div class="call-section" id="call-section" aria-hidden="true">
+            <div class="call-top">
+                <div class="left">
+                    <div style="font-weight:700;">Call</div>
+                    <div style="margin-left:8px; color:var(--text-faint); font-size:13px;" id="call-duration">00:00</div>
+                </div>
+                <div class="right">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="quality-dot" id="call-quality-dot" title="Connection quality"></div>
+                        <button class="btn btn-ghost" onclick="leaveCallView()">Leave call</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="call-grid" style="margin-top:12px;">
+                <div class="call-card" id="local-card">
+                    <div class="avatar" id="local-avatar">Y</div>
+                    <div class="call-info">
+                        <div class="call-name" id="local-name">You</div>
+                        <div class="call-status" id="local-status">Muted by default</div>
+                        <div class="call-controls">
+                            <div class="mic-meter" title="Your mic level">
+                                <div class="mic-meter-fill" id="local-meter"></div>
+                            </div>
+                            <div style="flex:1"></div>
+                        </div>
+                        <div class="call-actions">
+                            <button class="btn btn-ghost" id="mute-btn" onclick="toggleMute()">Mute</button>
+                            <button class="btn btn-ghost" id="deafen-btn" onclick="toggleDeafen()">Deafen</button>
+                            <button class="btn btn-ghost ptt-hold-btn" id="ptt-btn" onclick="togglePtt()">
+                                Hold-to-talk (Space) <span style="font-size:12px; margin-left:6px; color:var(--text-faint)">off</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="call-card" id="remote-card">
+                    <div class="avatar" id="remote-avatar">F</div>
+                    <div class="call-info">
+                        <div class="call-name" id="remote-name">Friend</div>
+                        <div class="call-status" id="remote-status">Not connected</div>
+                        <div class="call-controls">
+                            <div class="mic-meter" title="Their mic level">
+                                <div class="mic-meter-fill" id="remote-meter"></div>
+                            </div>
+                            <div style="flex:1"></div>
+                        </div>
+                        <div class="call-actions">
+                            <div id="remote-reconnect-note" style="font-size:12px; color:var(--text-faint)"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="call-footer" style="margin-top:12px;">
+                <div style="flex:1; color:var(--text-faint); font-size:13px;">Tip: use headphones to avoid echo. Auto-muted on join.</div>
+                <div>
+                    <button class="btn btn-primary" onclick="toggleCallView()">Back to watch</button>
+                </div>
+            </div>
         </div>
 
-        <div class="glass reel-section">
-            <div class="reel-heading">
-                <h2>Up Next</h2>
-                <span id="reel-count">0 in reel</span>
-            </div>
-            <div class="reel-track" id="reel-track">
-                <div class="reel-empty">Queued clips will line up here — tap one to jump right to it.</div>
-            </div>
-        </div>
     </div>
 
     <div class="glass side-col">
         <h3>Watch with a friend</h3>
 
-        <div class="nickname-row">
-            <label class="field-label" for="nickname-input">Your name</label>
-            <input type="text" id="nickname-input" placeholder="You" maxlength="16">
-        </div>
-
-        <div class="role-tabs" id="role-tabs">
-            <button class="role-tab active" id="tab-host" onclick="showRole('host')">Host a room</button>
-            <button class="role-tab" id="tab-join" onclick="showRole('join')">Join a room</button>
-        </div>
-
-        <div class="role-panel active" id="panel-host">
-            <div class="room-code-card">
-                <label class="field-label">Your room code</label>
-                <div class="room-code-value mono" id="my-id-display">•••••</div>
-                <div class="room-code-actions">
-                    <button class="btn btn-primary copy-btn" id="copy-btn" onclick="copyRoomCode(event)">Copy code</button>
-                    <button class="btn btn-ghost copy-btn" id="copy-link-btn" onclick="copyInviteLink(event)">Copy link</button>
-                </div>
-                <div class="waiting-note">
-                    <div class="waiting-dot" id="waiting-dot"></div>
-                    <span id="waiting-label">Send this to your friend, then wait here</span>
-                </div>
+        <div class="room-summary-idle" id="room-summary-idle">
+            <div>
+                <div class="rsi-label">Your room code</div>
+                <div class="rsi-code mono" id="mini-room-code">•••••</div>
             </div>
-        </div>
-
-        <div class="role-panel" id="panel-join">
-            <label class="field-label" for="peer-id-input">Your friend's 5-digit code</label>
-            <input type="text" id="peer-id-input" inputmode="numeric" maxlength="5" placeholder="00000">
-            <button class="btn btn-primary" id="join-btn" onclick="connectToPeer()" style="width: 100%; margin-top: 12px;">Join room</button>
+            <button class="btn btn-ghost" onclick="openLanding()">Invite / Join</button>
         </div>
 
         <div class="connected-card" id="connected-card">
@@ -820,6 +1023,7 @@
             <div class="connected-room-id mono" id="connected-room-id">•••••</div>
             <div class="connected-actions">
                 <button class="btn btn-ghost" onclick="copyRoomCode(event)">Copy room code</button>
+                <button class="btn btn-ghost call-button-inline" onclick="toggleCallView()" id="connected-call-btn">📞 Call only</button>
                 <button class="btn btn-danger" onclick="disconnectRoom()">Disconnect</button>
             </div>
         </div>
@@ -860,6 +1064,21 @@
     let currentVideoId = null;
     let playerReady = false;
 
+    // Media / Call state
+    let localStream = null;
+    let mediaCall = null;            // outgoing/incoming MediaConnection
+    let remoteStream = null;
+    let audioEl = null;              // <audio> element for remote audio
+    let audioDeafened = false;
+    let localMuted = true;           // auto-mute on join
+    let pttEnabled = false;
+    let pttActive = false;
+    let callStartTs = null;
+    let callTimerInterval = null;
+    let analyserLocal = null, analyserRemote = null, audioContext = null, rafId = null;
+    let qualityPollInterval = null;
+    let reconnectAttemptsCall = 0;
+
     // Every queue item gets a stable id so add/remove/reorder sync correctly
     // between both peers even if their local arrays briefly diverge.
     function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
@@ -889,10 +1108,19 @@
         return String(Math.floor(10000 + Math.random() * 90000));
     }
 
+    // Keeps the full room-code display (landing screen) and the compact
+    // mini one (sidebar, once inside the app) in sync with a single call.
+    function setMyIdDisplay(text) {
+        const full = document.getElementById('my-id-display');
+        const mini = document.getElementById('mini-room-code');
+        if (full) full.innerText = text;
+        if (mini) mini.innerText = text;
+    }
+
     function initPeer(attempt) {
         if (typeof Peer === 'undefined') {
             console.error('PeerJS failed to load — connections are unavailable, but the rest of the app still works.');
-            document.getElementById('my-id-display').innerText = 'error';
+            setMyIdDisplay('error');
             return;
         }
         attempt = attempt || 0;
@@ -900,7 +1128,7 @@
         peer = new Peer(code);
 
         peer.on('open', id => {
-            document.getElementById('my-id-display').innerText = id;
+            setMyIdDisplay(id);
             // A friend opened our shared invite link — jump straight to joining their room.
             if (roomFromUrl && roomFromUrl !== id && !autoJoinAttempted) {
                 autoJoinAttempted = true;
@@ -911,6 +1139,25 @@
         });
 
         peer.on('connection', c => { conn = c; setupConn(); });
+
+        // incoming media call handler
+        peer.on('call', async (incoming) => {
+            try {
+                const stream = await getLocalStream(); // will auto-mute
+                incoming.answer(stream);
+                setupMediaCall(incoming);
+            } catch (e) {
+                console.warn('Could not get local mic for incoming call:', e);
+                // still answer muted (listen-only) if we can
+                try {
+                    const s = await getLocalStream({ audio: false });
+                    incoming.answer(s);
+                    setupMediaCall(incoming);
+                } catch (ee) {
+                    console.error('Answer failed:', ee);
+                }
+            }
+        });
 
         peer.on('error', err => {
             if (err.type === 'unavailable-id' && attempt < 6) {
@@ -997,6 +1244,9 @@
         if (queue.length === 0) return;
         const next = queue.shift();
         currentVideoId = next.id;
+        // Unlike the manual pick/paste/search flows, this one runs when a video
+        // just ended — continuing straight into the next queued clip is the
+        // whole point of a queue, so this is the one place that keeps autoplay.
         player.loadVideoById(next.id);
         updateNowShowing(next.title || next.id);
         safeSend({ type: 'video', id: next.id });
@@ -1044,6 +1294,8 @@
         document.getElementById('panel-host').classList.toggle('active', !isLive && document.getElementById('tab-host').classList.contains('active'));
         document.getElementById('panel-join').classList.toggle('active', !isLive && document.getElementById('tab-join').classList.contains('active'));
         document.getElementById('connected-card').classList.toggle('active', isLive);
+        const idleWidget = document.getElementById('room-summary-idle');
+        if (idleWidget) idleWidget.style.display = isLive ? 'none' : 'flex';
 
         if (isLive) {
             const roomId = (conn && conn.peer) ? conn.peer : document.getElementById('my-id-display').innerText;
@@ -1053,11 +1305,25 @@
                 const badge = document.getElementById('connected-badge');
                 badge.classList.add('just-connected');
                 setTimeout(() => badge.classList.remove('just-connected'), 1000);
+                // Connecting is the whole point of the landing screen — once it
+                // happens, step straight into the app instead of making people
+                // click an extra button to leave a screen they're done with.
+                enterApp();
             }
         } else {
             stopSessionTimer();
             document.getElementById('typing-indicator').classList.remove('active');
         }
+    }
+
+    /* ================= Landing screen: create/join happens here, before the app opens ================= */
+    function enterApp() {
+        const landing = document.getElementById('landing-overlay');
+        if (landing) landing.classList.add('closed');
+    }
+    function openLanding() {
+        const landing = document.getElementById('landing-overlay');
+        if (landing) landing.classList.remove('closed');
     }
 
     function showRole(role) {
@@ -1170,7 +1436,10 @@
                         break;
                     case 'video':
                         currentVideoId = data.id;
-                        player.loadVideoById(data.id);
+                        // Cue rather than load: don't force-start playback on this side just
+                        // because the other side picked a video. It'll start in sync once
+                        // either person actually presses play (see the 'sync' case below).
+                        player.cueVideoById(data.id);
                         fetchVideoMeta(data.id).then(meta => updateNowShowing(meta.title));
                         break;
                     case 'reaction':
@@ -1184,6 +1453,7 @@
                         break;
                     case 'nickname':
                         friendNickname = (data.name && data.name.trim()) ? data.name.trim() : 'Friend';
+                        updateRemoteNameUI();
                         break;
                     case 'typing':
                         showTypingIndicator();
@@ -1246,8 +1516,24 @@
             nickname = nicknameInput.value.trim();
             try { localStorage.setItem('nw_nickname', nickname); } catch (e) { /* storage unavailable */ }
             safeSend({ type: 'nickname', name: nickname });
+            updateLocalNameUI();
         });
     }
+
+    function updateLocalNameUI() {
+        const el = document.getElementById('local-name');
+        const avatar = document.getElementById('local-avatar');
+        if (el) el.innerText = nickname || 'You';
+        if (avatar) avatar.innerText = (nickname && nickname[0]) ? nickname[0].toUpperCase() : 'Y';
+    }
+    function updateRemoteNameUI() {
+        const el = document.getElementById('remote-name');
+        const avatar = document.getElementById('remote-avatar');
+        if (el) el.innerText = friendNickname || 'Friend';
+        if (avatar) avatar.innerText = (friendNickname && friendNickname[0]) ? friendNickname[0].toUpperCase() : 'F';
+    }
+    updateLocalNameUI();
+    updateRemoteNameUI();
 
     function extractId(url) {
         url = url.trim();
@@ -1267,7 +1553,8 @@
         const id = extractId(document.getElementById('url-input').value);
         if (!id) return;
         currentVideoId = id;
-        player.loadVideoById(id);
+        // Cue instead of auto-playing — press play on the player when you're ready.
+        player.cueVideoById(id);
         document.getElementById('url-input').value = '';
         safeSend({ type: 'video', id: id });
         fetchVideoMeta(id).then(meta => updateNowShowing(meta.title));
@@ -1439,7 +1726,8 @@
         if (!pendingPick) return;
         const { id, title } = pendingPick;
         currentVideoId = id;
-        player.loadVideoById(id);
+        // Cue instead of auto-playing — press play on the player when you're ready.
+        player.cueVideoById(id);
         safeSend({ type: 'video', id: id });
         updateNowShowing(title);
         closePickPopup();
@@ -1498,7 +1786,8 @@
             chip.querySelector('.remove-x').onclick = (e) => removeFromQueue(i, e);
             chip.onclick = () => {
                 currentVideoId = item.id;
-                player.loadVideoById(item.id);
+                // Cue instead of auto-playing — press play on the player when you're ready.
+                player.cueVideoById(item.id);
                 updateNowShowing(item.title || item.id);
                 safeSend({ type: 'video', id: item.id });
             };
@@ -1620,6 +1909,16 @@
         const tag = (e.target && e.target.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable)) return;
         if (!player || typeof player.getPlayerState !== 'function') return;
+        // Space key used for PTT when in call view and PTT enabled
+        if (document.getElementById('call-section').classList.contains('active') && pttEnabled) {
+            if (e.code === 'Space') {
+                if (!pttActive) {
+                    e.preventDefault();
+                    startPttHold();
+                }
+            }
+            return;
+        }
         if (e.code === 'Space') {
             e.preventDefault();
             const state = player.getPlayerState();
@@ -1628,6 +1927,11 @@
             skipBy(-5);
         } else if (e.code === 'ArrowRight') {
             skipBy(5);
+        }
+    });
+    document.addEventListener('keyup', (e) => {
+        if (document.getElementById('call-section').classList.contains('active') && pttEnabled && e.code === 'Space') {
+            endPttHold();
         }
     });
 
@@ -1780,6 +2084,480 @@
         for (let i = 0; i < 10; i++) setTimeout(spawnEmber, i * 900);
         setInterval(spawnEmber, 1400);
     }
+
+    /* =========================
+       Call feature implementation
+       - Uses existing PeerJS peer object
+       - Uses peer.call() / peer.on('call', ...)
+       - Does not replace data conn or YT player state in memory; only toggles DOM visibility
+       ========================= */
+
+    async function getLocalStream(opts) {
+        opts = opts || { audio: { echoCancellation: true, noiseSuppression: true } };
+        if (localStream) {
+            // If the stored stream has ended, recreate
+            const tracksAlive = localStream.getAudioTracks().some(t => t && t.enabled !== undefined);
+            if (tracksAlive) return localStream;
+        }
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia(opts);
+            // start muted by default to avoid hot-mic surprise
+            if (localStream && localStream.getAudioTracks().length > 0) {
+                localStream.getAudioTracks().forEach(t => t.enabled = false);
+                localMuted = true;
+            }
+            return localStream;
+        } catch (e) {
+            console.warn('getUserMedia failed:', e);
+            throw e;
+        }
+    }
+
+    // Initiates an outgoing call to the connected peer (if any)
+    async function startCall() {
+        if (!conn || !conn.open) {
+            alert('You need to be connected to your friend to start a call.');
+            return;
+        }
+        if (mediaCall) {
+            console.log('Call already active');
+            return;
+        }
+        try {
+            const s = await getLocalStream();
+            // call the remote peer using existing Peer object; remote id is conn.peer
+            const remoteId = conn.peer;
+            if (!remoteId) {
+                console.warn('No remote peer id found');
+                return;
+            }
+            mediaCall = peer.call(remoteId, s);
+            setupMediaCall(mediaCall);
+        } catch (e) {
+            console.error('startCall failed:', e);
+            alert('Could not start microphone. Check your permissions.');
+        }
+    }
+
+    function setupMediaCall(call) {
+        console.log('Setting up media call', call);
+        mediaCall = call;
+        reconnectAttemptsCall = 0;
+
+        // remote stream arrives
+        call.on('stream', stream => {
+            attachRemoteStream(stream);
+            document.getElementById('remote-status').innerText = 'Connected';
+            document.getElementById('remote-reconnect-note').innerText = '';
+        });
+
+        call.on('close', () => {
+            console.log('Call closed');
+            cleanupCallState();
+        });
+        call.on('error', (err) => {
+            console.warn('Call error', err);
+            document.getElementById('remote-status').innerText = 'Call error';
+        });
+
+        // best-effort hooking to the underlying RTCPeerConnection for connection state & stats
+        const pc = call.peerConnection || call._pc || call._connection;
+        if (pc) {
+            if (typeof pc.addEventListener === 'function') {
+                pc.addEventListener('connectionstatechange', () => {
+                    if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                        showRemoteReconnecting(true);
+                    } else if (pc.connectionState === 'connected') {
+                        showRemoteReconnecting(false);
+                    }
+                });
+            } else if (pc.onconnectionstatechange !== undefined) {
+                pc.onconnectionstatechange = () => {
+                    if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                        showRemoteReconnecting(true);
+                    } else if (pc.connectionState === 'connected') {
+                        showRemoteReconnecting(false);
+                    }
+                };
+            }
+        }
+
+        // start analyzers & quality polling
+        ensureAudioContext();
+        startAnalyserLoops();
+        startQualityPolling();
+
+        // show UI state
+        callStartTs = Date.now();
+        startCallTimer();
+        updateCallButtonState(true);
+
+        // make sure remote name/avatars are up to date
+        updateRemoteNameUI();
+    }
+
+    function attachRemoteStream(stream) {
+        remoteStream = stream;
+        // create hidden <audio> element if not present
+        if (!audioEl) {
+            audioEl = document.createElement('audio');
+            audioEl.autoplay = true;
+            audioEl.style.display = 'none';
+            document.body.appendChild(audioEl);
+        }
+        audioEl.srcObject = stream;
+        audioEl.muted = audioDeafened; // apply deafen state
+    }
+
+    function ensureAudioContext() {
+        if (!audioContext) {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.warn('AudioContext unavailable:', e);
+                audioContext = null;
+            }
+        }
+    }
+
+    function startAnalyserLoops() {
+        if (!audioContext) return;
+        // local analyser (if localStream exists)
+        if (localStream && !analyserLocal) {
+            try {
+                const src = audioContext.createMediaStreamSource(localStream);
+                analyserLocal = audioContext.createAnalyser();
+                analyserLocal.fftSize = 256;
+                src.connect(analyserLocal);
+            } catch (e) {
+                console.warn('Local analyser failed:', e);
+                analyserLocal = null;
+            }
+        }
+        // remote analyser
+        if (remoteStream && !analyserRemote) {
+            try {
+                const src2 = audioContext.createMediaStreamSource(remoteStream);
+                analyserRemote = audioContext.createAnalyser();
+                analyserRemote.fftSize = 256;
+                src2.connect(analyserRemote);
+            } catch (e) {
+                console.warn('Remote analyser failed:', e);
+                analyserRemote = null;
+            }
+        }
+        if (!rafId) rafTick();
+    }
+
+    function rafTick() {
+        if (!audioContext) return;
+        rafId = requestAnimationFrame(rafTick);
+        // local
+        if (analyserLocal) {
+            const data = new Uint8Array(analyserLocal.frequencyBinCount);
+            analyserLocal.getByteFrequencyData(data);
+            let sum = 0;
+            for (let i = 0; i < data.length; i++) sum += data[i];
+            const avg = (sum / data.length) / 255;
+            setLocalMicMeter(avg);
+            const el = document.getElementById('local-card');
+            if (avg > 0.06 && !localMuted && !pttEnabled) {
+                el.classList.add('speaking');
+            } else {
+                el.classList.remove('speaking');
+            }
+        }
+        // remote
+        if (analyserRemote) {
+            const data2 = new Uint8Array(analyserRemote.frequencyBinCount);
+            analyserRemote.getByteFrequencyData(data2);
+            let sum2 = 0;
+            for (let i = 0; i < data2.length; i++) sum2 += data2[i];
+            const avg2 = (sum2 / data2.length) / 255;
+            setRemoteMicMeter(avg2);
+            const el2 = document.getElementById('remote-card');
+            if (avg2 > 0.045) el2.classList.add('speaking'); else el2.classList.remove('speaking');
+        }
+    }
+
+    function setLocalMicMeter(v) {
+        const fill = document.getElementById('local-meter');
+        if (fill) fill.style.width = Math.min(100, Math.round(v * 100)) + '%';
+    }
+    function setRemoteMicMeter(v) {
+        const fill = document.getElementById('remote-meter');
+        if (fill) fill.style.width = Math.min(100, Math.round(v * 100)) + '%';
+    }
+
+    function startQualityPolling() {
+        stopQualityPolling();
+        qualityPollInterval = setInterval(async () => {
+            if (!mediaCall) return;
+            const pc = mediaCall.peerConnection || mediaCall._pc || mediaCall._connection;
+            if (!pc || typeof pc.getStats !== 'function') return;
+            try {
+                const stats = await pc.getStats();
+                // best-effort: find inbound-rtp for audio
+                let packetsLost = 0, packetsReceived = 0, jitter = 0;
+                stats.forEach(report => {
+                    if (report.type === 'inbound-rtp' && report.kind === 'audio') {
+                        packetsLost += report.packetsLost || 0;
+                        packetsReceived += report.packetsReceived || 0;
+                        jitter = report.jitter || jitter;
+                    }
+                    // some browsers report remote-inbound-rtp
+                });
+                const lossRate = packetsReceived + packetsLost > 0 ? (packetsLost / (packetsReceived + packetsLost)) : 0;
+                const dot = document.getElementById('call-quality-dot');
+                if (lossRate < 0.02 && jitter < 0.03) {
+                    dot.classList.remove('warn','bad');
+                } else if (lossRate < 0.08) {
+                    dot.classList.add('warn'); dot.classList.remove('bad');
+                } else {
+                    dot.classList.add('bad'); dot.classList.remove('warn');
+                }
+            } catch (e) {
+                // ignore
+            }
+        }, 3000);
+    }
+    function stopQualityPolling() {
+        if (qualityPollInterval) clearInterval(qualityPollInterval);
+        qualityPollInterval = null;
+    }
+
+    function showRemoteReconnecting(isReconnecting) {
+        const txt = document.getElementById('remote-status');
+        const note = document.getElementById('remote-reconnect-note');
+        if (isReconnecting) {
+            txt.innerText = 'Reconnecting…';
+            note.innerText = 'Trying to restore call';
+            // try a gentle re-call attempt a few times
+            tryReconnectCall();
+        } else {
+            txt.innerText = 'Connected';
+            note.innerText = '';
+        }
+    }
+
+    function tryReconnectCall() {
+        if (!mediaCall) return;
+        reconnectAttemptsCall++;
+        if (reconnectAttemptsCall > 4) {
+            // give up: notify user
+            document.getElementById('remote-reconnect-note').innerText = 'Could not restore call — try leaving and retrying.';
+            return;
+        }
+        // PeerJS media reconnect patterns vary by browser; best-effort: attempt to re-call
+        setTimeout(async () => {
+            try {
+                if (!localStream) await getLocalStream();
+                if (conn && conn.peer) {
+                    const newCall = peer.call(conn.peer, localStream);
+                    setupMediaCall(newCall);
+                }
+            } catch (e) {
+                console.warn('Re-call attempt failed:', e);
+            }
+        }, 1500 * reconnectAttemptsCall);
+    }
+
+    function cleanupCallState() {
+        // keep localStream reference but stop analyzers & UI for this call
+        if (audioEl) {
+            try { audioEl.srcObject = null; audioEl.remove(); } catch (e) {}
+            audioEl = null;
+        }
+        remoteStream = null;
+        if (analyserRemote) { analyserRemote.disconnect && analyserRemote.disconnect(); analyserRemote = null; }
+        if (analyserLocal) { analyserLocal.disconnect && analyserLocal.disconnect(); analyserLocal = null; }
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = null;
+        stopQualityPolling();
+        mediaCall = null;
+        stopCallTimer();
+        updateCallButtonState(false);
+        // remove speaking classes
+        document.getElementById('remote-card').classList.remove('speaking');
+        document.getElementById('local-card').classList.remove('speaking');
+        // update remote UI
+        document.getElementById('remote-status').innerText = 'Not connected';
+        document.getElementById('remote-reconnect-note').innerText = '';
+        document.getElementById('call-quality-dot').classList.remove('warn','bad');
+    }
+
+    function startCallTimer() {
+        if (callTimerInterval) return;
+        callStartTs = Date.now();
+        updateCallDurationUI();
+        callTimerInterval = setInterval(updateCallDurationUI, 1000);
+    }
+    function stopCallTimer() {
+        if (callTimerInterval) clearInterval(callTimerInterval);
+        callTimerInterval = null;
+        document.getElementById('call-duration').innerText = '00:00';
+    }
+    function updateCallDurationUI() {
+        if (!callStartTs) return;
+        const elapsed = Math.floor((Date.now() - callStartTs) / 1000);
+        const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const s = String(elapsed % 60).padStart(2, '0');
+        document.getElementById('call-duration').innerText = m + ':' + s;
+    }
+
+    function updateCallButtonState(active) {
+        const top = document.getElementById('call-top-label');
+        const topmini = document.getElementById('call-top-mini');
+        const connectedBtn = document.getElementById('connected-call-btn');
+        if (active) {
+            if (top) top.innerText = 'In call';
+            if (topmini) { topmini.style.display = localMuted ? 'inline' : 'none'; topmini.innerText = localMuted ? '(muted)' : ''; }
+            if (connectedBtn) connectedBtn.innerText = '📞 In call';
+        } else {
+            if (top) top.innerText = 'Call only';
+            if (topmini) topmini.style.display = 'none';
+            if (connectedBtn) connectedBtn.innerText = '📞 Call only';
+        }
+    }
+
+    // UI toggle: show the call section and hide the watch view; do not destroy state
+    function toggleCallView() {
+        const callSection = document.getElementById('call-section');
+        const watchView = document.getElementById('watch-view');
+        const isActive = callSection.classList.contains('active');
+        if (!isActive) {
+            // entering call view: ensure call exists (if not, start one)
+            if (!mediaCall) {
+                // if cannot start (no conn) show error and don't switch
+                if (!conn || !conn.open) {
+                    alert('You must be connected with your friend to start a voice call.');
+                    return;
+                }
+                startCall().catch(e => console.warn('startCall error', e));
+            }
+            // pause the video and sync the pause to the peer
+            if (player && typeof player.pauseVideo === 'function') {
+                const time = (player && typeof player.getCurrentTime === 'function') ? player.getCurrentTime() : 0;
+                player.pauseVideo();
+                safeSend({ type: 'sync', action: 'pause', time: time });
+            }
+            enterCallView();
+        } else {
+            // leaving: back to watch (does not end call itself unless user explicitly leaves)
+            exitCallView();
+        }
+    }
+
+    function enterCallView() {
+        document.getElementById('call-section').classList.add('active');
+        document.getElementById('call-section').setAttribute('aria-hidden','false');
+        document.getElementById('watch-view').style.display = 'none';
+        // keep the call connected while in call view
+        updateCallButtonState(!!mediaCall);
+    }
+
+    function exitCallView() {
+        document.getElementById('call-section').classList.remove('active');
+        document.getElementById('call-section').setAttribute('aria-hidden','true');
+        document.getElementById('watch-view').style.display = '';
+        // do not auto-resume playback
+    }
+
+    // Explicit leave call button: ends the voice call only (keeps data conn)
+    function leaveCallView() {
+        if (mediaCall) {
+            try { mediaCall.close(); } catch (e) {}
+            cleanupCallState();
+        }
+        exitCallView();
+    }
+
+    // Mute/unmute local mic
+    function toggleMute() {
+        if (!localStream || localStream.getAudioTracks().length === 0) {
+            alert('No microphone available.');
+            return;
+        }
+        localMuted = !localMuted;
+        localStream.getAudioTracks().forEach(t => t.enabled = !localMuted);
+        document.getElementById('mute-btn').innerText = localMuted ? 'Unmute' : 'Mute';
+        document.getElementById('local-status').innerText = localMuted ? 'Muted' : 'Live';
+        updateCallButtonState(!!mediaCall);
+    }
+
+    // Deafen (mute incoming audio) - still runs analyser so remote card can glow
+    function toggleDeafen() {
+        audioDeafened = !audioDeafened;
+        if (audioEl) audioEl.muted = audioDeafened;
+        document.getElementById('deafen-btn').innerText = audioDeafened ? 'Undeafen' : 'Deafen';
+        document.getElementById('remote-card').classList.toggle('deafened', audioDeafened);
+    }
+
+    // Push-to-talk: toggle PTT mode on/off (enables hold behavior)
+    function togglePtt() {
+        pttEnabled = !pttEnabled;
+        const btn = document.getElementById('ptt-btn');
+        btn.classList.toggle('active', pttEnabled);
+        btn.querySelector('span').innerText = pttEnabled ? 'on' : 'off';
+        if (!pttEnabled && pttActive) {
+            // if disabling while holding, release
+            endPttHold();
+        }
+    }
+
+    function startPttHold() {
+        if (!pttEnabled) return;
+        if (!localStream) return;
+        // enable mic only while held
+        localStream.getAudioTracks().forEach(t => t.enabled = true);
+        pttActive = true;
+        document.getElementById('ptt-btn').classList.add('active');
+        document.getElementById('local-status').innerText = 'PTT active';
+    }
+    function endPttHold() {
+        if (!pttEnabled) return;
+        if (!localStream) return;
+        localStream.getAudioTracks().forEach(t => t.enabled = false);
+        pttActive = false;
+        document.getElementById('ptt-btn').classList.remove('active');
+        document.getElementById('local-status').innerText = localMuted ? 'Muted' : 'Live';
+    }
+
+    // On-screen hold-to-talk for mobile
+    const pttBtn = document.getElementById('ptt-btn');
+    pttBtn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (!pttEnabled) { togglePtt(); } // if not enabled, turn it on automatically
+        startPttHold();
+    });
+    pttBtn.addEventListener('pointerup', (e) => {
+        e.preventDefault();
+        endPttHold();
+    });
+    pttBtn.addEventListener('pointercancel', (e) => {
+        e.preventDefault();
+        endPttHold();
+    });
+
+    /* ================= Incoming call handler for cases where the friend calls first ================= */
+    // peer.on('call', ...) registered during initPeer
+
+    /* ================= Safe teardown when user navigates away ================= */
+    window.addEventListener('beforeunload', () => {
+        try { if (mediaCall) mediaCall.close(); } catch (e) {}
+        try { if (conn) conn.close(); } catch (e) {}
+        try { if (peer) peer.destroy(); } catch (e) {}
+    });
+
+    /* ================= Misc small helpers for call UI ================= */
+    function toggleCallViewManual() { toggleCallView(); }
+    // Expose some functions to console for debugging
+    window._nw = { startCall, leaveCallView, toggleMute, toggleDeafen, togglePtt };
+
+    // Ensure UI updates if nickname changes from remote
+    // (also update when we receive 'nickname' messages in setupConn)
+
+    // End of script
 </script>
 </body>
 </html>
