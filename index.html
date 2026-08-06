@@ -1126,7 +1126,17 @@
     }
 
     function extractId(url) {
-        return url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
+        url = url.trim();
+        const patterns = [
+            /(?:youtube\.com\/watch\?.*v=)([\w-]{11})/,
+            /(?:youtu\.be\/)([\w-]{11})/,
+            /(?:youtube\.com\/embed\/)([\w-]{11})/
+        ];
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match) return match[1];
+        }
+        return url;
     }
 
     function loadVideo() {
