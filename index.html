@@ -1738,14 +1738,14 @@
             // noise — which gets genuinely similar results back.
             const cleanTitle = (title || '').replace(/\s*[|\-–—].*$/, '').trim();
             const q = cleanTitle || title || videoId;
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=12&q=${encodeURIComponent(q)}&key=${encodeURIComponent(searchApiKey)}`;
-            const res = await fetch(url);
+            const data = await ytApiFetch(key =>
+                `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=12&q=${encodeURIComponent(q)}&key=${encodeURIComponent(key)}`
+            );
             if (myToken !== relatedFetchToken) return; // superseded by a newer video load
-            if (!res.ok) {
+            if (!data || data._quotaExhausted || data._httpError) {
                 track.innerHTML = '<div class="reel-empty">Couldn\'t load related videos right now.</div>';
                 return;
             }
-            const data = await res.json();
             const items = (Array.isArray(data.items) ? data.items : [])
                 .filter(it => it.id && it.id.videoId && it.id.videoId !== videoId)
                 .slice(0, 10);
@@ -2223,28 +2223,52 @@
 
     /* ================= Search YouTube (themed popup, both users can use it) ================= */
     // API keys are loaded from api-key.txt in the repo (one key per line).
-    // No keys are baked into this HTML file — add/remove keys by editing api-key.txt only.
-    // When a key hits its daily quota (403/429), the next key in the list is tried automatically.
+    // No keys are baked into this HTML — add/remove keys by editing api-key.txt only.
+    // When a key hits its daily quota (403/429), the next key is tried automatically.
     const YT_API_KEY_FILE_URL = 'https://raw.githubusercontent.com/Bhavishyadalal/youtube-sharing/main/api-key.txt';
-    let apiKeys = [];       // populated on load from api-key.txt
+    let apiKeys = [];
     let currentKeyIndex = 0;
 
     (async function loadRemoteApiKeys() {
         try {
-            // Cache-busting param ensures a fresh copy is fetched, not a stale CDN version.
             const res = await fetch(YT_API_KEY_FILE_URL + '?v=' + Date.now());
-            if (!res.ok) { console.warn('Could not load api-key.txt — search will be unavailable.'); return; }
+            if (!res.ok) { console.warn('Could not load api-key.txt — search unavailable.'); return; }
             const text = await res.text();
-            // Each non-empty, non-comment line is treated as one API key.
             apiKeys = text.split('\n')
                 .map(l => l.trim())
                 .filter(l => l.length > 0 && !l.startsWith('#'));
-            if (apiKeys.length === 0) console.warn('api-key.txt is empty — search will be unavailable.');
-            else console.log(`Loaded ${apiKeys.length} API key(s) from api-key.txt`);
+            if (apiKeys.length === 0) console.warn('api-key.txt is empty — search unavailable.');
+            else console.log('Loaded ' + apiKeys.length + ' API key(s) from api-key.txt');
         } catch (e) {
             console.warn('Failed to fetch api-key.txt:', e);
         }
     })();
+
+    // Shared helper: fetch a YouTube search URL trying each key in rotation.
+    // Returns the parsed JSON data on success, or null on total failure.
+    // Caller passes a URL template function: (key) => fullUrl
+    async function ytApiFetch(buildUrl) {
+        if (apiKeys.length === 0) return null;
+        let tried = 0;
+        while (tried < apiKeys.length) {
+            const key = apiKeys[currentKeyIndex];
+            try {
+                const res = await fetch(buildUrl(key));
+                if (res.status === 403 || res.status === 429) {
+                    console.warn('API key ' + (currentKeyIndex + 1) + '/' + apiKeys.length + ' quota exceeded, rotating...');
+                    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+                    tried++;
+                    continue;
+                }
+                if (!res.ok) return { _httpError: res.status };
+                return await res.json();
+            } catch (e) {
+                console.error('YouTube API fetch error:', e);
+                return null;
+            }
+        }
+        return { _quotaExhausted: true };
+    }
 
     let pendingPick = null; // the search result currently shown in the play/queue popup
     let searchInFlight = false;
@@ -2282,53 +2306,25 @@
         searchInFlight = true;
         resultsEl.innerHTML = '';
         setStatusMsg('Searching...');
-
-        // Try each key in order, rotating on quota errors (403/429).
-        let tried = 0;
-        const startIndex = currentKeyIndex;
-        while (tried < apiKeys.length) {
-            const key = apiKeys[currentKeyIndex];
-            try {
-                // videoEmbeddable=true filters out videos that would show "unavailable" in the iframe.
-                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=8&q=${encodeURIComponent(q)}&key=${encodeURIComponent(key)}`;
-                const res = await fetch(url);
-
-                if (res.status === 403 || res.status === 429) {
-                    // This key hit its quota — rotate to the next one silently and retry.
-                    console.warn(`API key ${currentKeyIndex + 1}/${apiKeys.length} quota exceeded, rotating...`);
-                    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
-                    tried++;
-                    continue;
-                }
-
-                if (!res.ok) {
-                    setStatusMsg('Search failed (' + res.status + '). Try again in a moment.');
-                    searchInFlight = false;
-                    return;
-                }
-
-                const data = await res.json();
-                const items = Array.isArray(data.items) ? data.items : [];
-                if (items.length === 0) {
-                    setStatusMsg('No results for "' + q + '".');
-                    searchInFlight = false;
-                    return;
-                }
+        // videoEmbeddable=true filters out results that would show "Video unavailable" in the iframe.
+        const data = await ytApiFetch(key =>
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=8&q=${encodeURIComponent(q)}&key=${encodeURIComponent(key)}`
+        );
+        if (!data) {
+            setStatusMsg("Couldn't reach YouTube. Check your connection and try again.");
+        } else if (data._quotaExhausted) {
+            setStatusMsg('All API keys have hit their daily quota. Try again tomorrow or paste a YouTube URL directly.');
+        } else if (data._httpError) {
+            setStatusMsg('Search failed (' + data._httpError + '). Try again in a moment.');
+        } else {
+            const items = Array.isArray(data.items) ? data.items : [];
+            if (items.length === 0) {
+                setStatusMsg('No results for "' + q + '".');
+            } else {
                 document.getElementById('search-status').style.display = 'none';
                 renderSearchResults(items);
-                searchInFlight = false;
-                return; // success — done
-
-            } catch (e) {
-                console.error('YouTube search error:', e);
-                setStatusMsg("Couldn't reach YouTube. Check your connection and try again.");
-                searchInFlight = false;
-                return;
             }
         }
-
-        // All keys exhausted
-        setStatusMsg('All API keys have hit their daily quota. Search will resume tomorrow, or add more keys to api-key.txt.');
         searchInFlight = false;
     }
 
