@@ -2222,23 +2222,27 @@
     }
 
     /* ================= Search YouTube (themed popup, both users can use it) ================= */
-    // Baked-in fallback so search always works, even if the remote key file is
-    // briefly unreachable. The live key comes from a plain .txt file in the repo,
-    // so it can be swapped any time by editing that file — no redeploy needed.
-    const DEFAULT_YT_API_KEY = 'AIzaSyAiRmr5jFqdHMaGf9JECpEjg-04UpQaiNU';
+    // API keys are loaded from api-key.txt in the repo (one key per line).
+    // No keys are baked into this HTML file — add/remove keys by editing api-key.txt only.
+    // When a key hits its daily quota (403/429), the next key in the list is tried automatically.
     const YT_API_KEY_FILE_URL = 'https://raw.githubusercontent.com/Bhavishyadalal/youtube-sharing/main/api-key.txt';
-    let searchApiKey = DEFAULT_YT_API_KEY;
+    let apiKeys = [];       // populated on load from api-key.txt
+    let currentKeyIndex = 0;
 
-    (async function loadRemoteApiKey() {
+    (async function loadRemoteApiKeys() {
         try {
-            // Cache-busting query param so an edit to the file is picked up quickly
-            // instead of being served from a stale CDN copy.
+            // Cache-busting param ensures a fresh copy is fetched, not a stale CDN version.
             const res = await fetch(YT_API_KEY_FILE_URL + '?v=' + Date.now());
-            if (!res.ok) return;
-            const text = (await res.text()).trim();
-            if (text) searchApiKey = text;
+            if (!res.ok) { console.warn('Could not load api-key.txt — search will be unavailable.'); return; }
+            const text = await res.text();
+            // Each non-empty, non-comment line is treated as one API key.
+            apiKeys = text.split('\n')
+                .map(l => l.trim())
+                .filter(l => l.length > 0 && !l.startsWith('#'));
+            if (apiKeys.length === 0) console.warn('api-key.txt is empty — search will be unavailable.');
+            else console.log(`Loaded ${apiKeys.length} API key(s) from api-key.txt`);
         } catch (e) {
-            console.warn('Could not load remote API key file, using built-in fallback key:', e);
+            console.warn('Failed to fetch api-key.txt:', e);
         }
     })();
 
@@ -2271,37 +2275,60 @@
         const resultsEl = document.getElementById('search-results');
         if (!q) { setStatusMsg('Type something to search for.'); return; }
         if (searchInFlight) return;
+        if (apiKeys.length === 0) {
+            setStatusMsg('Search unavailable — no API keys loaded. Check api-key.txt in the repo.');
+            return;
+        }
         searchInFlight = true;
         resultsEl.innerHTML = '';
         setStatusMsg('Searching...');
-        try {
-            // videoEmbeddable=true filters out results whose owners have disabled
-            // embedding — without it, search can return videos that play fine on
-            // youtube.com but show "Video unavailable" in this embedded iframe player.
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=16&q=${encodeURIComponent(q)}&key=${encodeURIComponent(searchApiKey)}`;
-            const res = await fetch(url);
-            if (!res.ok) {
-                if (res.status === 403) {
-                    setStatusMsg('Search is temporarily unavailable (API key rejected or quota reached).');
-                } else {
-                    setStatusMsg('Search failed (' + res.status + '). Try again in a moment.');
+
+        // Try each key in order, rotating on quota errors (403/429).
+        let tried = 0;
+        const startIndex = currentKeyIndex;
+        while (tried < apiKeys.length) {
+            const key = apiKeys[currentKeyIndex];
+            try {
+                // videoEmbeddable=true filters out videos that would show "unavailable" in the iframe.
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=8&q=${encodeURIComponent(q)}&key=${encodeURIComponent(key)}`;
+                const res = await fetch(url);
+
+                if (res.status === 403 || res.status === 429) {
+                    // This key hit its quota — rotate to the next one silently and retry.
+                    console.warn(`API key ${currentKeyIndex + 1}/${apiKeys.length} quota exceeded, rotating...`);
+                    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+                    tried++;
+                    continue;
                 }
+
+                if (!res.ok) {
+                    setStatusMsg('Search failed (' + res.status + '). Try again in a moment.');
+                    searchInFlight = false;
+                    return;
+                }
+
+                const data = await res.json();
+                const items = Array.isArray(data.items) ? data.items : [];
+                if (items.length === 0) {
+                    setStatusMsg('No results for "' + q + '".');
+                    searchInFlight = false;
+                    return;
+                }
+                document.getElementById('search-status').style.display = 'none';
+                renderSearchResults(items);
+                searchInFlight = false;
+                return; // success — done
+
+            } catch (e) {
+                console.error('YouTube search error:', e);
+                setStatusMsg("Couldn't reach YouTube. Check your connection and try again.");
                 searchInFlight = false;
                 return;
             }
-            const data = await res.json();
-            const items = Array.isArray(data.items) ? data.items : [];
-            if (items.length === 0) {
-                setStatusMsg('No results for "' + q + '".');
-                searchInFlight = false;
-                return;
-            }
-            document.getElementById('search-status').style.display = 'none';
-            renderSearchResults(items);
-        } catch (e) {
-            console.error('YouTube search failed:', e);
-            setStatusMsg('Couldn\'t reach YouTube. Check your connection and try again.');
         }
+
+        // All keys exhausted
+        setStatusMsg('All API keys have hit their daily quota. Search will resume tomorrow, or add more keys to api-key.txt.');
         searchInFlight = false;
     }
 
