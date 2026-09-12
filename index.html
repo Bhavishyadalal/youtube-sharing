@@ -466,7 +466,7 @@ dialog {
 }
 dialog::backdrop { background: rgba(2,4,7,.72); backdrop-filter: blur(10px); }
 .dialog-head { padding: 22px 24px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--line); }
-.dialog-head h2 { font-size: 19px; font-weight: 800; letter-spacing: -.7px; }
+.dialog-head h2 { font-size: 19px; font-weight: 800; letter-spacing: -.7px; flex: 1; min-width: 0; }
 .dialog-body { padding: 24px; }
 .dialog-intro { margin-bottom: 22px; color: var(--muted); font-size: 13px; }
 .dialog-tabs { padding: 4px; background: rgba(0,0,0,.28); border: 1px solid var(--line); border-radius: 14px; display: flex; gap: 4px; margin: 20px 0; }
@@ -878,7 +878,8 @@ body.bandwidth-mode * { animation-duration: .01ms !important; transition-duratio
   .room-card,
   .voice-card,
   .chat-panel,
-  .library {
+  .library,
+  dialog {
     background: var(--panel-solid);
     box-shadow: 0 8px 24px rgba(0,0,0,.3);
   }
@@ -1203,7 +1204,7 @@ button, a, .tab, .reaction-button, .queue-thumb, .card-image {
     padding: 14px 16px 12px;
     position: sticky;
     top: 0;
-    background: inherit;
+    background: var(--panel-solid);
     z-index: 2;
   }
   .dialog-head::before {
@@ -2472,14 +2473,30 @@ function setupDialogs() {
 }
 async function copyText(text) {
   try {
+    if (!navigator.clipboard || !window.isSecureContext) throw new Error("clipboard API unavailable");
     await navigator.clipboard.writeText(text);
     toast("Copied. Send it to your person.");
-  } catch {
-    $("copyFallback").value = text;
-    openDialog("copyDialog");
-    $("copyFallback").focus();
-    $("copyFallback").select();
-  }
+    return;
+  } catch {}
+  // Legacy fallback: select a hidden textarea and use execCommand — still works
+  // synchronously off a user gesture even where the async Clipboard API can't.
+  try {
+    const temp = document.createElement("textarea");
+    temp.value = text;
+    temp.style.position = "fixed";
+    temp.style.top = "-1000px";
+    temp.style.opacity = "0";
+    document.body.appendChild(temp);
+    temp.focus();
+    temp.select();
+    const ok = document.execCommand("copy");
+    temp.remove();
+    if (ok) { toast("Copied. Send it to your person."); return; }
+  } catch {}
+  $("copyFallback").value = text;
+  openDialog("copyDialog");
+  $("copyFallback").focus();
+  $("copyFallback").select();
 }
 async function fetchJSON(url, options = {}, timeout = 10000) {
   const controller = new AbortController();
@@ -2703,6 +2720,10 @@ async function videoMetadata(id) {
   return { ...item, uid: uid() };
 }
 async function addFromInput(toQueue) {
+  const rawVal = $("videoUrl").value.trim();
+  if (/list=/.test(rawVal) && !extractVideoId(rawVal)) {
+    return importPlaylist(rawVal);
+  }
   const id = extractVideoId($("videoUrl").value);
   if (!id) return toast("Paste a valid YouTube link, Shorts link, or 11-character video ID.", true);
   const original = $("videoUrl").value;
@@ -2872,6 +2893,8 @@ function playTogether() {
   if (!state.video) return toast("Load a video first.");
   blockedPlayback = false;
   command("together", { time: getPlayerTime() });
+  UPGRADE.confetti();
+  UPGRADE.haptic(20);
 }
 function toggleVideoMute() {
   if (!playerReady) return;
@@ -2992,7 +3015,12 @@ function renderState() {
   }
   $("syncLabel").textContent = connected() ? (state.playing ? "Shared playback" : "Connected & ready") : (state.video ? "Your solo screening" : "Ready when you are");
   $("syncBadge").classList.toggle("live", connected());
+  updateMiniNow();
+  // Debounce localStorage writes — they block the main thread on mobile
+  clearTimeout(_sessionSaveTimer);
+  _sessionSaveTimer = setTimeout(() => UPGRADE.sessionSave(), 1200);
 }
+let _sessionSaveTimer = 0;
 function renderQueue() {
   $("queueCount").textContent = state.queue.length;
   $("queueEmpty").hidden = !!state.queue.length;
@@ -4017,6 +4045,10 @@ function init() {
     if (navigator.share) {
       try { await navigator.share({ title: "Watch with me on NexusWatch", text: "Different places. Same moment.", url }); return; }
       catch (error) { if (error.name === "AbortError") return; }
+      // Activation may be gone after the share prompt closed — copyText has
+      // its own execCommand fallback that still works without it.
+      copyText(url);
+      return;
     }
     copyText(url);
   };
@@ -4119,6 +4151,31 @@ function init() {
   if (location.protocol === "file:") {
     toast("For rooms, microphone access, and reliable YouTube playback, open this file through HTTPS or localhost.", true);
   }
+
+  // inject dim layer
+  const stage = document.querySelector(".screen-stage");
+  if (stage && !$("cinemaDimLayer")) {
+    const dim = node("div", "cinema-dim-layer");
+    dim.id = "cinemaDimLayer";
+    stage.append(dim);
+  }
+  setupCinemaDim();
+  setupModeToggles();
+  setupFont();
+  setupDataTools();
+  addInviteExtras();
+  expandDiscover();
+  setupPWA();
+  UPGRADE.sessionRestore();
+  maybeOnboard();
+  $("miniPlay")?.addEventListener("click", togglePlayback);
+  // captions tip once
+  if (storageGet(localStorage, "nw3-captions-tip") !== "1") {
+    setTimeout(() => {
+      toast("Tip: open YouTube captions with the CC button on the player if needed.");
+      storageSet(localStorage, "nw3-captions-tip", "1");
+    }, 12000);
+  }
 }
 document.addEventListener("DOMContentLoaded", () => init());
 
@@ -4219,14 +4276,6 @@ THEMES.push(
   { id: "noir", name: "Noir", accent: "#e5e5e5", ink: "#0a0a0a", soft: "rgba(255,255,255,.08)", blobA: "rgba(255,255,255,.06)", blobB: "rgba(120,120,140,.08)" }
 );
 
-// Hook play-together confetti
-const _origPlayTogether = playTogether;
-playTogether = function() {
-  _origPlayTogether();
-  UPGRADE.confetti();
-  UPGRADE.haptic(20);
-};
-
 // Ripple / haptic — skip when bandwidth mode or coarse pointer (mobile)
 document.addEventListener("click", e => {
   const btn = e.target.closest(".btn");
@@ -4321,16 +4370,6 @@ function updateMiniNow() {
   $("miniThumb").src = "https://i.ytimg.com/vi/" + state.video.id + "/default.jpg";
   buttonContent($("miniPlay"), state.playing ? "pause" : "play");
 }
-let _sessionSaveTimer = 0;
-const _origRenderState = renderState;
-renderState = function() {
-  _origRenderState();
-  updateMiniNow();
-  // Debounce localStorage writes — they block the main thread on mobile
-  clearTimeout(_sessionSaveTimer);
-  _sessionSaveTimer = setTimeout(() => UPGRADE.sessionSave(), 1200);
-};
-
 // Drift display — only when settings dialog is open / desktop
 setInterval(() => {
   const el = $("driftDisplay");
@@ -4470,16 +4509,6 @@ async function importPlaylist(url) {
   $("searchStatus").textContent = "Full playlist import needs a valid API key. Search or paste individual links for now.";
 }
 
-// Wire video form to also accept playlist
-const _origAddFromInput = addFromInput;
-addFromInput = async function(toQueue) {
-  const val = $("videoUrl").value.trim();
-  if (/list=/.test(val) && !extractVideoId(val)) {
-    return importPlaylist(val);
-  }
-  return _origAddFromInput(toQueue);
-};
-
 // PWA lite
 function setupPWA() {
   if (!document.querySelector('link[rel="manifest"]')) {
@@ -4497,38 +4526,6 @@ function setupPWA() {
     document.head.append(link);
   }
 }
-
-// Call after init pieces
-const _origInit = init;
-init = function() {
-  _origInit();
-  // inject dim layer
-  const stage = document.querySelector(".screen-stage");
-  if (stage && !$("cinemaDimLayer")) {
-    const dim = node("div", "cinema-dim-layer");
-    dim.id = "cinemaDimLayer";
-    stage.append(dim);
-  }
-  setupCinemaDim();
-  setupModeToggles();
-  setupFont();
-  setupDataTools();
-  addInviteExtras();
-  expandDiscover();
-  setupPWA();
-  UPGRADE.sessionRestore();
-  maybeOnboard();
-  $("miniPlay")?.addEventListener("click", togglePlayback);
-  // captions tip once
-  if (storageGet(localStorage, "nw3-captions-tip") !== "1") {
-    setTimeout(() => {
-      toast("Tip: open YouTube captions with the CC button on the player if needed.");
-      storageSet(localStorage, "nw3-captions-tip", "1");
-    }, 12000);
-  }
-};
-
-
 
 /* ========== MOBILE + POLISH JS ========== */
 (function mobilePolish() {
