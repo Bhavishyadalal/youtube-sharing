@@ -845,1002 +845,138 @@ body.bandwidth-mode .screen-orbit::before,
 body.bandwidth-mode .screen-orbit::after { display: none !important; }
 body.bandwidth-mode * { animation-duration: .01ms !important; transition-duration: .08s !important; }
 
-/* ========== MOBILE PERF: aggressive paint & compositing cuts ========== */
-@media (max-width: 900px) {
-  /* Kill continuous decorative motion by default on phones/tablets */
-  .aurora { display: none !important; }
-  .screen-orbit,
-  .screen-orbit::before,
-  .screen-orbit::after { animation: none !important; opacity: 0.4; }
-  body::before { opacity: 0.015; }
-
-  /* Cheaper glass — solid-ish panels, tiny blur only where it matters */
-  :root {
-    --glass: none;
-    --glass-strong: none;
-    --depth-shadow: 0 10px 32px rgba(0,0,0,.35);
-    --rim: inset 0 1px 0 rgba(255,255,255,.08);
-  }
-  .panel,
-  .cinema,
-  .topbar,
-  .mobile-nav,
-  .mini-now,
-  .btn,
-  dialog,
-  .toast,
-  .badge {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-  .panel,
-  .cinema,
-  .room-card,
-  .voice-card,
-  .chat-panel,
-  .library,
-  dialog {
-    background: var(--panel-solid);
-    box-shadow: 0 8px 24px rgba(0,0,0,.3);
-  }
-  .topbar {
-    background: rgba(8,10,14,.94);
-  }
-  .mobile-nav {
-    background: rgba(12,15,20,.96);
-  }
-
-  /* Fewer paint layers & cheaper transitions */
-  .btn,
-  .tab,
-  .reaction-button,
-  .queue-item,
-  .video-card,
-  .panel,
-  .badge,
-  .input,
-  .avatar,
-  .theme-option,
-  .mobile-nav button,
-  .mini-now,
-  .toast,
-  dialog,
-  .rail .btn,
-  .card-image img,
-  .queue-thumb img {
-    transition-duration: 0.12s !important;
-    transition-property: background, border-color, color, opacity, transform !important;
-  }
-  .video-card:hover,
-  .btn:hover:not(:disabled) {
-    transform: none;
-  }
-
-  /* Light containment — avoid paint/size traps that break page scroll */
-  .cinema,
-  .queue-list {
-    contain: layout style;
-  }
-  .chat-log {
-    /* keep internal scroll only; do not content-visibility the main column */
-    contain: layout style;
-  }
-
-  /* Disable soft-rise / queue / message entry animations on mobile to avoid jank on list updates */
-  .workspace-grid > *,
-  .page-heading,
-  .message,
-  .queue-item {
-    animation: none !important;
-  }
-
-  /* Hide decorative noise texture more */
-  body::before { display: none; }
+/* NexusWatch: consistent responsive surfaces */
+:root { --faint:#919ba8; --radius:20px; --panel:rgba(19,24,30,.94); --line:rgba(255,255,255,.09); }
+body { background:radial-gradient(ellipse at 40% 0%,var(--accent-soft),transparent 46%),#090d11; }
+body::before,.aurora { display:none; }
+.panel { backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 12px 36px #0002; }
+.btn.primary { box-shadow:0 3px 14px #0002; }
+.btn:hover:not(:disabled) { transform:translateY(-1px); }
+.btn:active:not(:disabled) { transform:scale(.98); }
+.topbar { min-height:78px; background:#090d11ed; }
+.brand-sub { font-size:9px; letter-spacing:.16em; margin-top:4px; }
+.workspace { max-width:1540px; padding:36px clamp(20px,3vw,48px) 28px; }
+.page-heading { margin-bottom:30px; }
+.page-heading h1 { font-size:clamp(28px,3.1vw,43px); letter-spacing:-1.7px; }
+.page-heading p { font-size:14px; margin-top:12px; }
+.workspace-grid { grid-template-columns:minmax(0,1fr) 338px; gap:24px; }
+.watch-column,.social-column { gap:18px; }
+.cinema { border-radius:22px; box-shadow:0 20px 60px #0005; }
+.screen-top { background:#13191e; }
+.screen-dots i:first-child { background:var(--accent); }
+.empty-screen { background:radial-gradient(ellipse at 50% 100%,var(--accent-soft),transparent 70%),linear-gradient(135deg,#15201b,#0b1116 60%); }
+.empty-play { border-radius:50%; width:78px; height:78px; box-shadow:0 0 0 12px #ffffff03,0 0 0 34px #ffffff02; }
+.screen-orbit { animation:none; width:70%; }
+.empty-screen h2 { font-size:clamp(24px,3vw,38px); }
+.empty-screen p { font-size:14px; max-width:340px; line-height:1.7; }
+.empty-bottom { font-size:9px; letter-spacing:.18em; }
+.player-toolbar { background:#13191e; flex-wrap:wrap; }
+.toolbar-right { margin-left:auto; }
+.now-playing { padding:5px 4px; }
+.now-playing h2 { font-size:19px; }
+.now-playing .meta { line-height:1.7; }
+.link-composer { background:#141b21; border-color:var(--line-hi); padding:14px; }
+.input { background:#090e14; border-color:var(--line-hi); min-height:48px; }
+.input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+.library-head { padding:12px 16px; }
+.tab[aria-selected="true"] { background:var(--accent-soft); color:var(--accent); box-shadow:none; }
+.queue-empty { min-height:150px; }
+.queue-empty p,.chat-placeholder p { color:var(--muted); line-height:1.7; }
+.queue-title,.card-title { font-size:13px; }
+.queue-sub,.card-channel { font-size:11px; }
+.card-title { height:40px; }
+.video-card { background:#11171d; }
+.video-card:hover { border-color:color-mix(in srgb,var(--accent) 40%,transparent); }
+.card-image::after { opacity:0; transition:opacity .2s; }
+.card-image:hover::after,.card-image:focus-visible::after { opacity:1; }
+.room-card { padding:23px; background:linear-gradient(135deg,var(--accent-soft),transparent 75%),#13191f; }
+.room-card h2 { font-size:18px; }
+.room-card p { line-height:1.7; }
+.room-card::before { height:1px; }
+.room-code-mini { letter-spacing:.1em; }
+.room-people { margin:24px 0; }
+.avatar { width:44px; height:44px; }
+.chat-panel { min-height:400px; }
+.chat-log { height:250px; }
+.chat-placeholder strong { font-size:15px; color:var(--text); }
+.message-bubble { font-size:13px; line-height:1.65; }
+.chat-heading svg { color:var(--accent); }
+#chatPresence { font-size:9px; letter-spacing:.06em; }
+.voice-card { padding:21px; }
+.voice-card h2 { font-size:15px; }
+.voice-card p { line-height:1.6; font-size:12px; }
+.privacy-note,.footer { font-size:11px; }
+.dialog-head { position:sticky; top:0; background:#141a22; z-index:3; }
+dialog { background:#10161e; backdrop-filter:none; }
+.dialog-body { padding:24px; }
+.setting-section { padding:0 0 22px; border-bottom:1px solid var(--line); }
+.setting-section:last-child { border:0; padding:0; }
+.setting-section+.setting-section { margin-top:22px; }
+.setting-section h3 { color:var(--text); font-size:14px; }
+.settings-note { color:var(--muted); font-size:12px; }
+.check-row { min-height:44px; }
+.theme-option { min-height:76px; }
+#searchStatus,#roomStatus { overflow-wrap:anywhere; }
+#searchResults:empty { display:none; }
+.quick-start { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.quick-start .btn { border-radius:99px; font-size:12px; padding:8px 13px; min-height:38px; box-shadow:none; }
+.queue-tools { display:flex; gap:8px; align-items:center; }
+.queue-tools .btn { width:40px; min-height:40px; padding:8px; }
+.seek-strip { padding:0 18px 10px; background:#13191e; }
+#seekRange { width:100%; accent-color:var(--accent); height:20px; margin:0; cursor:pointer; }
+.network-banner { background:#44222a; color:#ffd5db; text-align:center; padding:10px 16px; font-size:12px; }
+#qrImage { width:220px; max-width:100%; background:white; padding:10px; border-radius:16px; display:block; margin:0 auto 20px; }
+#newMessages { align-self:center; margin:0 12px 10px; min-height:34px; font-size:11px; }
+#main,#cinema,#chatPanel,#voiceCard { scroll-margin-top:98px; }
+body.modal-open,body.fullscreen-lock { overflow:hidden; }
+body.focus-mode .heading-side { display:block; }
+body.focus-mode .page-heading { display:flex; }
+body.fullscreen-lock .mobile-nav,body.fullscreen-lock .mini-now,body.call-focus .mini-now { display:none!important; }
+@media(min-width:1500px) { .workspace-grid { grid-template-columns:minmax(0,1fr) 360px; } }
+@media(max-width:1100px) and (min-width:981px) { .workspace-grid { grid-template-columns:minmax(0,1fr) 300px; gap:18px; } .workspace { padding:28px 22px; } }
+@media(max-width:980px) { .rail { display:none; } .shell { margin-left:0; } .workspace-grid { grid-template-columns:minmax(0,1fr); } .social-column { display:grid; grid-template-columns:1fr 1fr; } .chat-panel { grid-column:2; grid-row:1/span 3; } .chat-log { height:300px; } }
+@media(max-width:640px) {
+ :root { --bottom-chrome:calc(76px + env(safe-area-inset-bottom,0px)); }
+ .shell { padding-bottom:var(--bottom-chrome); } body.has-video .shell { padding-bottom:calc(var(--bottom-chrome) + 64px); }
+ .topbar { padding:14px 18px; min-height:68px; padding-top:max(14px,env(safe-area-inset-top)); }
+ .brand-sub { display:none; } .wordmark { font-size:20px; }
+ .workspace { padding:26px 14px 18px; } .page-heading { margin-bottom:24px; gap:8px; align-items:flex-start; }
+ .page-heading h1 { font-size:31px; letter-spacing:-1.2px; max-width:340px; line-height:1.15; }
+ .page-heading p { font-size:13px; max-width:290px; } .heading-label { font-size:9px; }
+ .screen-stage { min-height:230px; } body.has-video .screen-stage { min-height:0; }
+ .empty-play { width:50px; height:50px; margin-bottom:18px; }
+ .empty-screen h2 { font-size:24px; } .empty-screen p { font-size:12px; max-width:270px; margin:8px 0 16px; }
+ .empty-screen .btn { font-size:12px; min-height:44px; } .screen-top .eyebrow { letter-spacing:.08em; }
+ .screen-top .badge { font-size:9px; padding:5px 7px; } .screen-dots { display:none; }
+ .player-toolbar { padding:8px; gap:4px; } .transport { gap:0; }
+ .toolbar-right { gap:0; } #localMuteButton { display:inline-flex; } #volume { display:none; }
+ .transport .btn,.toolbar-right .btn { width:38px; flex-basis:38px; min-height:44px; }
+ .video-time { font-size:9px; } #rate { min-height:44px; }
+ .seek-strip { padding:0 12px 6px; } .now-playing h2 { font-size:17px; }
+ .now-playing .meta { font-size:11px; } .now-playing .spread { align-items:flex-start; }
+ .now-playing .eyebrow { font-size:9px; letter-spacing:.08em; }
+ .social-column { display:flex; flex-direction:column; gap:16px; }
+ .room-card { order:0; } .chat-panel { order:1; } .voice-card { order:2; } .privacy-note { order:3; }
+ .chat-log { height:280px; } .chat-compose .input,.input { font-size:16px; }
+ .library-body { padding:14px; } .library-head { padding:8px 10px; }
+ .queue-empty { min-height:130px; } .discover-grid .video-card:last-child { display:block; }
+ .card-actions .btn { padding:8px 6px; font-size:11px; } .card-title { font-size:12px; height:36px; }
+ .mobile-nav { left:10px; right:10px; bottom:calc(8px + env(safe-area-inset-bottom)); height:60px; padding:4px; border:1px solid var(--line-hi); border-radius:20px; background:#11171ff5; backdrop-filter:none; box-shadow:0 8px 28px #0006; }
+ .mobile-nav button { flex:1; min-width:0; min-height:50px; font-size:10px; }
+ .mini-now { bottom:calc(76px + env(safe-area-inset-bottom)); left:10px; right:10px; padding:8px 12px; height:56px; background:#141b23; backdrop-filter:none; }
+ .mini-now .sub { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+ .toast-stack { bottom:calc(84px + env(safe-area-inset-bottom)); } body.has-video .toast-stack { bottom:calc(146px + env(safe-area-inset-bottom)); }
+ dialog { width:100%; max-width:100%; margin:0; margin-top:auto; max-height:calc(var(--vvh,100dvh) - 14px); border-radius:24px 24px 0 0; padding-bottom:env(safe-area-inset-bottom); }
+ .dialog-head { padding:18px; } .dialog-body { padding:20px 18px 26px; } .dialog-head h2 { font-size:19px; }
+ .theme-options { grid-template-columns:repeat(3,minmax(0,1fr)); }
+ .search-form { flex-wrap:wrap; } .search-form .input { flex:1 1 190px; min-width:0; }
+ .quick-start .btn { font-size:11px; }
+ #main,#cinema,#chatPanel,#voiceCard { scroll-margin-top:84px; }
+ body.keyboard-open .mobile-nav,body.keyboard-open .mini-now { display:none!important; }
 }
-
-/* Extra tight for phones */
-@media (max-width: 640px) {
-  .panel,
-  .cinema {
-    box-shadow: 0 4px 16px rgba(0,0,0,.28);
-  }
-  /* Prefer solid accent buttons — no gradient paint cost */
-  .btn.primary {
-    background: var(--accent);
-    box-shadow: none;
-  }
-  /* Reduce reaction layer cost */
-  .float-reaction b { font-size: 32px; }
-  .reaction-layer { will-change: auto; }
-}
-
-/* Larger mobile targets */
-@media (max-width: 640px) {
-  .btn, .reaction-button, .tab, .mobile-nav button { min-height: 48px; }
-  .queue-actions .btn { min-width: 48px; min-height: 48px; }
-}
-
-/* Bottom-sheet feel for dialogs on mobile */
-@media (max-width: 640px) {
-  dialog {
-    margin: auto auto 0; width: 100%; max-width: 100%;
-    border-radius: 24px 24px 0 0; max-height: 88dvh;
-  }
-}
-
-/* Drift diagnostics */
-#driftBadge { font-size: 10px; color: var(--faint); margin-left: 8px; }
-
-/* Custom room title */
-#customRoomTitle {
-  font-size: 11px; font-weight: 700; letter-spacing: .04em;
-  color: var(--accent); margin-bottom: 8px;
-  overflow-wrap: anywhere;
-}
-#customRoomTitle::before { content: "✦ "; }
-
-/* Pure black OLED toggle visual */
-.oled-swatch { background: #000; border: 1px solid #333; }
-
-
-
-/* ========== POLISH + MOBILE OPTIMIZATION PASS ========== */
-
-/* System font fallbacks + smoother text */
-html {
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-  hanging-punctuation: first allow-end last;
-}
-body {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* GPU-friendly layers for animated bits only */
-.aurora span,
-.float-reaction,
-.queue-item,
-.btn.primary,
-.cinema {
-  will-change: auto;
-}
-.aurora span { will-change: transform; contain: strict; }
-
-/* Reduce expensive blur on very small / low-end via media */
-@media (max-width: 640px) {
-  :root {
-    --glass: blur(14px) saturate(1.2);
-    --glass-strong: blur(18px) saturate(1.25);
-  }
-  .panel, .cinema, .topbar, .mobile-nav, .mini-now, dialog {
-    backdrop-filter: var(--glass);
-    -webkit-backdrop-filter: var(--glass);
-  }
-  /* Softer shadows = cheaper paint */
-  .panel, .cinema {
-    box-shadow: 0 8px 28px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06);
-  }
-}
-
-/* Touch feedback without 300ms delay */
-button, a, .tab, .reaction-button, .queue-thumb, .card-image {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Prevent iOS zoom on focus while keeping readable size */
-@media (max-width: 640px) {
-  input.input, textarea, select, .chat-compose .input {
-    font-size: 16px !important;
-  }
-}
-
-/* Refined mobile layout */
-@media (max-width: 640px) {
-  .shell {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-  }
-  .workspace {
-    padding: 16px 12px 8px;
-  }
-  .page-heading {
-    margin-bottom: 14px;
-  }
-  .page-heading h1 {
-    font-size: 1.55rem;
-    letter-spacing: -0.6px;
-    line-height: 1.15;
-  }
-  .page-heading p {
-    font-size: 12px;
-    max-width: 280px;
-    line-height: 1.45;
-  }
-  .heading-label {
-    margin-bottom: 6px;
-  }
-  .workspace-grid {
-    gap: 14px;
-  }
-  .watch-column, .social-column {
-    gap: 12px;
-  }
-
-  /* Cinema tighter */
-  .cinema {
-    border-radius: 14px;
-  }
-  .screen-top {
-    min-height: 36px;
-    padding: 6px 10px;
-  }
-  .player-toolbar {
-    padding: 6px 6px;
-    gap: 2px;
-  }
-  .transport .btn,
-  .toolbar-right .btn {
-    width: 44px;
-    min-height: 44px;
-    flex-basis: 44px;
-  }
-  .video-time {
-    font-size: 10px;
-    letter-spacing: -0.2px;
-  }
-
-  /* Now playing + composer */
-  .now-playing h2 {
-    font-size: 14px;
-    line-height: 1.35;
-  }
-  .link-composer {
-    padding: 10px;
-    gap: 8px;
-    border-radius: 16px;
-  }
-  .composer-actions .btn {
-    min-height: 46px;
-  }
-
-  /* Library */
-  .library-head {
-    padding: 8px 10px;
-  }
-  .library-body {
-    padding: 10px;
-  }
-  .queue-item {
-    padding: 8px;
-    gap: 8px;
-    border-radius: 12px;
-  }
-  .queue-thumb {
-    width: 68px;
-    border-radius: 8px;
-  }
-  .queue-title {
-    font-size: 12px;
-    -webkit-line-clamp: 2;
-  }
-
-  /* Social stack */
-  .room-card, .voice-card, .chat-panel {
-    border-radius: 16px;
-  }
-  .chat-log {
-    height: 240px;
-  }
-  .chat-compose {
-    padding: 0 10px 12px;
-  }
-  .reaction-bar {
-    padding: 8px 8px;
-  }
-  .reaction-button {
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
-  }
-
-  /* Mobile nav — floating pill feel */
-  .mobile-nav {
-    left: 10px;
-    right: 10px;
-    bottom: max(8px, env(safe-area-inset-bottom));
-    width: auto;
-    border-radius: 18px;
-    border: 1px solid var(--line-hi);
-    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
-    background: rgba(12,15,20,.94);
-    box-shadow: 0 12px 40px rgba(0,0,0,.45);
-  }
-  .mobile-nav button {
-    border-radius: 14px;
-    width: 56px;
-    min-height: 48px;
-    font-size: 9px;
-    gap: 3px;
-  }
-  .mobile-nav svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  /* Mini now — sit above floating nav cleanly */
-  .mini-now {
-    left: 10px;
-    right: 10px;
-    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
-    padding: 8px 10px;
-    border-radius: 14px;
-    gap: 10px;
-  }
-  .mini-now img {
-    width: 48px;
-    height: 30px;
-    border-radius: 6px;
-  }
-  .toast-stack {
-    bottom: calc(130px + env(safe-area-inset-bottom, 0px));
-  }
-
-  /* Dialogs as true bottom sheets */
-  dialog {
-    margin: 0;
-    margin-top: auto;
-    width: 100%;
-    max-width: 100%;
-    max-height: min(90dvh, 920px);
-    border-radius: 20px 20px 0 0;
-    border: 1px solid var(--line-hi);
-    border-bottom: 0;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  dialog::backdrop {
-    background: rgba(0,0,0,.65);
-  }
-  .dialog-head {
-    padding: 14px 16px 12px;
-    position: sticky;
-    top: 0;
-    background: var(--panel-solid);
-    z-index: 2;
-  }
-  .dialog-head::before {
-    content: "";
-    display: block;
-    width: 36px;
-    height: 4px;
-    border-radius: 99px;
-    background: rgba(255,255,255,.18);
-    margin: 0 auto 12px;
-  }
-  .dialog-body {
-    padding: 16px;
-  }
-  .search-dialog {
-    max-height: 92dvh;
-  }
-  .search-results {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  /* Topbar compact */
-  .topbar {
-    min-height: 64px;
-    padding: 12px 14px;
-    padding-top: max(12px, env(safe-area-inset-top));
-  }
-  .wordmark {
-    font-size: 17px;
-  }
-  .brand-sub {
-    display: none;
-  }
-  .top-actions .btn.primary {
-    padding-inline: 12px;
-    min-height: 40px;
-    font-size: 12px;
-  }
-
-  /* Focus / call modes cleaner */
-  body.call-focus .workspace {
-    padding-bottom: calc(90px + env(safe-area-inset-bottom));
-  }
-  body.focus-mode .page-heading {
-    display: none;
-  }
-}
-
-/* Landscape phones */
-@media (max-width: 900px) and (orientation: landscape) {
-  .mobile-nav {
-    display: none;
-  }
-  .shell {
-    padding-bottom: 12px;
-  }
-  .mini-now {
-    display: none !important;
-  }
-  .screen-stage {
-    max-height: 70dvh;
-  }
-}
-
-/* Ultra-small */
-@media (max-width: 360px) {
-  .page-heading h1 {
-    font-size: 1.35rem;
-  }
-  .composer-actions {
-    flex-wrap: wrap;
-  }
-  .mobile-nav button {
-    width: 48px;
-    font-size: 8px;
-  }
-}
-
-/* Active press state for touch */
-@media (hover: none) {
-  .btn:active:not(:disabled) {
-    transform: scale(0.97);
-    opacity: 0.92;
-  }
-  .queue-item:active,
-  .video-card:active {
-    transform: scale(0.985);
-  }
-}
-
-/* Better empty / loading polish */
-.queue-empty, .chat-placeholder, .empty-screen {
-  animation: fade-up .45s ease both;
-}
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .queue-empty, .chat-placeholder, .empty-screen { animation: none; }
-}
-
-/* Scroll containment */
-.chat-log, .library-body, dialog {
-  overscroll-behavior: contain;
-}
-
-/* Selection + caret */
-::selection {
-  background: color-mix(in srgb, var(--accent) 70%, white);
-  color: var(--accent-ink);
-}
-
-/* Install / status bar theme sync */
-meta[name="theme-color"] {
-  /* kept in JS */
-}
-
-/* Safe area for notches when fullscreen CSS */
-.cinema.css-fullscreen {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* Hide noisy desktop-only chrome earlier */
-@media (max-width: 980px) {
-  .rail {
-    display: none;
-  }
-  .shell {
-    margin-left: 0;
-  }
-}
-
-
-
-/* ========== SMOOTH TRANSITIONS + SCROLLING ========== */
-
-html {
-  scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Global soft transitions for interactive UI */
-.btn,
-.tab,
-.reaction-button,
-.queue-item,
-.video-card,
-.panel,
-.badge,
-.input,
-.avatar,
-.theme-option,
-.mobile-nav button,
-.mini-now,
-.toast,
-dialog,
-.rail .btn,
-.card-image img,
-.queue-thumb img {
-  transition:
-    background 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    color 0.2s ease,
-    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.2s ease,
-    filter 0.25s ease;
-}
-
-/* Slightly longer for larger surfaces */
-.cinema,
-.panel,
-.room-card,
-.voice-card,
-.chat-panel,
-.library {
-  transition:
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s ease,
-    border-color 0.25s ease,
-    background 0.3s ease,
-    opacity 0.25s ease;
-}
-
-/* Hover lift refinement */
-.video-card:hover {
-  transform: translateY(-3px);
-}
-.btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-.btn:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
-  transition-duration: 0.08s;
-}
-
-/* Smooth focus ring */
-:focus-visible {
-  transition: outline-offset 0.15s ease, outline-color 0.15s ease;
-}
-
-/* Dialog enter/exit — progressive enhancement only */
-@supports (overlay: auto) {
-  dialog {
-    transition:
-      opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
-      overlay 0.28s allow-discrete,
-      display 0.28s allow-discrete;
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-  }
-  dialog[open] {
-    opacity: 1;
-    transform: none;
-  }
-  @starting-style {
-    dialog[open] {
-      opacity: 0;
-      transform: translateY(20px) scale(0.97);
-    }
-  }
-  dialog::backdrop {
-    transition: opacity 0.28s ease, overlay 0.28s allow-discrete, display 0.28s allow-discrete;
-    opacity: 0;
-  }
-  dialog[open]::backdrop { opacity: 1; }
-  @starting-style {
-    dialog[open]::backdrop { opacity: 0; }
-  }
-  @media (max-width: 640px) {
-    dialog { transform: translateY(24px); }
-    dialog[open] { transform: translateY(0); }
-    @starting-style {
-      dialog[open] { transform: translateY(40px); opacity: 0; }
-    }
-  }
-}
-
-/* Page / section reveal */
-.workspace-grid > *,
-.page-heading {
-  animation: soft-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.workspace-grid > *:nth-child(1) { animation-delay: 0.02s; }
-.workspace-grid > *:nth-child(2) { animation-delay: 0.08s; }
-@keyframes soft-rise {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: none; }
-}
-
-/* Smooth theme accent shifts */
-:root {
-  transition: none;
-}
-body, .panel, .btn.primary, .badge.live, .avatar {
-  transition: background 0.35s ease, color 0.25s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Chat message appear */
-.message {
-  animation: msg-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-@keyframes msg-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to { opacity: 1; transform: none; }
-}
-
-/* Mini-now slide — use class instead of fighting [hidden] */
-.mini-now {
-  display: none;
-  transition:
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.25s ease,
-    background 0.25s ease;
-}
-@media (max-width: 640px) {
-  body.has-video .mini-now.is-visible {
-    display: flex;
-    opacity: 1;
-    transform: none;
-  }
-  body.has-video .mini-now:not(.is-visible) {
-    display: flex;
-    opacity: 0;
-    transform: translateY(12px);
-    pointer-events: none;
-  }
-}
-
-/* Mobile nav active indicator smooth */
-.mobile-nav button {
-  transition: background 0.22s ease, color 0.2s ease, transform 0.18s ease;
-}
-.mobile-nav button.active {
-  transform: translateY(-1px);
-}
-
-/* Smooth scrollbar (where supported) */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,.18) transparent;
-}
-.chat-log, .library-body, dialog, .search-results {
-  scroll-behavior: smooth;
-}
-
-/* Reduced motion already covered above */
-@media (prefers-reduced-motion: reduce) {
-  .workspace-grid > *,
-  .page-heading,
-  .message,
-  .queue-item,
-  .mini-now {
-    animation: none !important;
-    transition: none !important;
-  }
-  dialog, dialog::backdrop {
-    transition: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-
-
-
-/* ========== BEST SMOOTH SCROLL ========== */
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 88px;
-}
-@media (max-width: 640px) {
-  html { scroll-padding-top: 72px; scroll-padding-bottom: 90px; }
-}
-
-/* Native smooth where supported + momentum */
-.chat-log,
-.library-body,
-.queue-list,
-.search-results,
-dialog,
-.workspace,
-.shell,
-.dialog-body {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
-/* Smoother scrollbar track */
-.chat-log::-webkit-scrollbar,
-.library-body::-webkit-scrollbar,
-dialog::-webkit-scrollbar {
-  width: 5px;
-}
-.chat-log::-webkit-scrollbar-thumb,
-.library-body::-webkit-scrollbar-thumb,
-dialog::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,.16);
-  border-radius: 99px;
-}
-
-/* Smooth-scroll flag — NEVER block pointer events (that kills touch scroll) */
-html.is-smooth-scrolling {
-  /* intentionally empty — previous pointer-events:none broke mobile scrolling */
-}
-
-/* ========== MOBILE BOTTOM CHROME + VERTICAL BALANCE (final) ========== */
-/*
-  Single source of truth for tall phones:
-  - Floating pill nav sits just above home indicator (one safe-area only)
-  - Mini-now sits tightly above nav with fixed gap
-  - Content padding reserves space so nothing is hidden or overlapped
-  - No double safe-area padding (was causing empty gap under nav)
-*/
-@media (max-width: 640px) {
-  :root {
-    --nav-h: 56px;
-    --nav-gap: 8px;
-    --mini-h: 52px;
-    --chrome-gap: 8px;
-    --bottom-chrome: calc(var(--nav-h) + var(--nav-gap) + env(safe-area-inset-bottom, 0px));
-    --bottom-with-mini: calc(var(--nav-h) + var(--nav-gap) + var(--mini-h) + var(--chrome-gap) + env(safe-area-inset-bottom, 0px));
-  }
-
-  /* Floating pill — no extra bottom padding that creates empty strip */
-  .mobile-nav {
-    display: flex !important;
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + var(--nav-gap));
-    width: auto;
-    height: var(--nav-h);
-    min-height: var(--nav-h);
-    max-height: var(--nav-h);
-    padding: 4px 4px !important;
-    margin: 0;
-    border-radius: 18px;
-    border: 1px solid var(--line-hi);
-    background: rgba(12, 15, 20, 0.96);
-    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5);
-    justify-content: space-around;
-    align-items: center;
-    z-index: 40;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-  .mobile-nav button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    width: 56px;
-    min-height: 48px;
-    height: 48px;
-    padding: 0;
-    margin: 0;
-    border-radius: 14px;
-    font-size: 9px;
-    line-height: 1.1;
-    color: var(--muted);
-    background: transparent;
-    border: 0;
-  }
-  .mobile-nav button.active {
-    background: var(--accent-soft);
-    color: var(--accent);
-  }
-  .mobile-nav svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  /* Mini now-playing — tight stack above nav, never overlaps */
-  .mini-now {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + var(--nav-gap) + var(--nav-h) + var(--chrome-gap));
-    z-index: 35;
-    height: var(--mini-h);
-    min-height: var(--mini-h);
-    max-height: var(--mini-h);
-    padding: 0 10px;
-    border-radius: 14px;
-    gap: 10px;
-    align-items: center;
-    background: rgba(18, 22, 30, 0.96);
-    border: 1px solid var(--line-hi);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-  .mini-now img {
-    width: 46px;
-    height: 28px;
-    object-fit: cover;
-    border-radius: 6px;
-    flex-shrink: 0;
-  }
-  .mini-now .meta {
-    flex: 1;
-    min-width: 0;
-  }
-  .mini-now .title {
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .mini-now .sub {
-    font-size: 10px;
-    color: var(--faint);
-  }
-  .mini-now .btn.square {
-    width: 40px;
-    height: 40px;
-    min-height: 40px;
-    flex: 0 0 40px;
-  }
-
-  /* Content clear of chrome */
-  .shell {
-    padding-bottom: calc(var(--bottom-chrome) + 12px) !important;
-  }
-  body.has-video .shell {
-    padding-bottom: calc(var(--bottom-with-mini) + 12px) !important;
-  }
-
-  /* Toasts sit above mini + nav */
-  .toast-stack {
-    bottom: calc(var(--bottom-with-mini) + 12px) !important;
-  }
-  body:not(.has-video) .toast-stack {
-    bottom: calc(var(--bottom-chrome) + 12px) !important;
-  }
-
-  /* Tighter vertical rhythm on tall screens so cinema + controls feel balanced */
-  .workspace {
-    padding: 12px 12px 6px !important;
-  }
-  .page-heading {
-    margin-bottom: 10px !important;
-  }
-  .page-heading h1 {
-    font-size: 1.4rem !important;
-    line-height: 1.2 !important;
-  }
-  .page-heading p {
-    margin-top: 4px !important;
-    font-size: 12px !important;
-  }
-  .heading-label {
-    margin-bottom: 4px !important;
-  }
-  .workspace-grid {
-    gap: 12px !important;
-  }
-  .watch-column,
-  .social-column {
-    gap: 10px !important;
-  }
-  .cinema {
-    border-radius: 14px;
-  }
-  .screen-top {
-    min-height: 34px;
-    padding: 6px 10px;
-  }
-  .player-toolbar {
-    padding: 6px 6px;
-  }
-  .now-playing {
-    padding: 0 2px;
-  }
-  .now-playing h2 {
-    font-size: 14px !important;
-    margin: 4px 0 !important;
-    line-height: 1.35 !important;
-  }
-  .now-playing .meta {
-    gap: 8px;
-    font-size: 11px;
-  }
-  .link-composer {
-    padding: 10px !important;
-    gap: 8px !important;
-    border-radius: 14px;
-  }
-  .composer-actions .btn {
-    min-height: 44px;
-  }
-  .library-head {
-    padding: 8px 10px;
-  }
-  .library-body {
-    padding: 10px;
-  }
-  .room-card,
-  .voice-card,
-  .chat-panel {
-    border-radius: 14px;
-  }
-  .chat-log {
-    height: 220px;
-  }
-  .footer {
-    padding: 16px 2px 8px;
-    font-size: 10px;
-  }
-
-  /* Prevent horizontal spill only — never lock vertical scroll */
-  .workspace,
-  .watch-column,
-  .social-column {
-    overflow-x: clip;
-    overflow-y: visible;
-  }
-
-  /* Guarantee the page itself remains the scroll container */
-  html, body {
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    height: auto !important;
-    max-height: none !important;
-    position: static !important;
-  }
-  .shell {
-    overflow: visible !important;
-    height: auto !important;
-    max-height: none !important;
-  }
-}
-
-/* Extra-tall phones (e.g. 19.5:9+) — slightly more breathing room at top only */
-@media (max-width: 640px) and (min-height: 780px) {
-  .workspace {
-    padding-top: 14px !important;
-  }
-  .page-heading {
-    margin-bottom: 12px !important;
-  }
-  .chat-log {
-    height: 240px;
-  }
-}
-
-/* Landscape phones: hide floating chrome to maximize video */
-@media (max-width: 900px) and (orientation: landscape) {
-  .mobile-nav,
-  .mini-now {
-    display: none !important;
-  }
-  .shell {
-    padding-bottom: 12px !important;
-  }
-  body.has-video .shell {
-    padding-bottom: 12px !important;
-  }
-}
-
+@media(max-width:380px) { .video-time { display:none; } .page-heading h1 { font-size:28px; } .card-actions { flex-direction:column; } .screen-top .eyebrow { font-size:8px; } }
+@media(max-width:640px) and (orientation:landscape) { .mobile-nav,.mini-now { display:none!important; } .shell,body.has-video .shell { padding-bottom:16px; } }
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
 </style>
 </head>
 <body>
@@ -1871,6 +1007,7 @@ html.is-smooth-scrolling {
 </aside>
 
 <div class="shell">
+<div class="network-banner" id="networkBanner" role="status" hidden>You’re offline. Reconnect to share playback, chat, and voice.</div>
   <header class="topbar">
     <a href="#" aria-label="NexusWatch home">
       <div class="wordmark">nexus<span>watch</span><span style="font-size:25px">.</span></div>
@@ -1947,6 +1084,7 @@ html.is-smooth-scrolling {
               <button class="btn square" id="fullscreenButton" aria-label="Enter fullscreen" title="Fullscreen"><span data-icon="expand"></span></button>
             </div>
           </div>
+          <div class="seek-strip"><label class="sr" for="seekRange">Seek shared video</label><input type="range" id="seekRange" min="0" max="100" value="0" step="0.1" disabled></div>
         </section>
 
         <div class="now-playing">
@@ -1980,7 +1118,7 @@ html.is-smooth-scrolling {
               <button type="button" class="tab" id="queueTab" role="tab" aria-selected="true" aria-controls="queuePanel">Up next <span class="tab-count" id="queueCount">0</span></button>
               <button type="button" class="tab" id="discoverTab" role="tab" aria-selected="false" aria-controls="discoverPanel" tabindex="-1">Discover <span data-icon="sparkles"></span></button>
             </div>
-            <button class="btn square ghost" id="clearQueueButton" aria-label="Clear queue" title="Clear queue"><span data-icon="trash"></span></button>
+            <div class="queue-tools"><button class="btn square ghost" id="nextVideoButton" aria-label="Play next queued video" title="Play next"><span data-icon="forward"></span></button><button class="btn square ghost" id="saveQueueButton" aria-label="Export queue" title="Export queue"><span data-icon="copy"></span></button><button class="btn square ghost" id="importQueueButton" aria-label="Import queue" title="Import queue"><span data-icon="plus"></span></button><input id="queueFileInput" type="file" accept="application/json,.json" hidden><button class="btn square ghost" id="clearQueueButton" aria-label="Clear queue" title="Clear queue"><span data-icon="trash"></span></button></div>
           </div>
           <div class="library-body" id="queuePanel" role="tabpanel" aria-labelledby="queueTab">
             <div class="queue-empty" id="queueEmpty">
@@ -1994,7 +1132,7 @@ html.is-smooth-scrolling {
               <div><h3 style="font-size:13px">A few places to begin</h3><p class="small muted" style="margin-top:4px">Animation, music, and a little wonder.</p></div>
               <button class="text-btn small" id="findSimilarButton">Find more ↗</button>
             </div>
-            <div class="discover-grid" id="discoverGrid"></div>
+            <div class="quick-start" aria-label="Discovery categories"><button class="btn" data-search="short films">Short films</button><button class="btn" data-search="live music sessions">Music</button><button class="btn" data-search="travel films">Explore</button><button class="btn" data-search="science documentaries">Learn</button></div><div class="discover-grid" id="discoverGrid"></div>
           </div>
         </section>
       </section>
@@ -2032,6 +1170,7 @@ html.is-smooth-scrolling {
               <p>Connect with your friend and let the side conversations begin.</p>
             </div>
           </div>
+          <button class="btn ghost" id="newMessages" type="button" hidden>New messages ↓</button>
           <div class="typing" id="typingIndicator" aria-live="polite"></div>
           <form class="chat-compose" id="chatForm">
             <label class="sr" for="chatInput">Message your friend</label>
@@ -2149,7 +1288,7 @@ html.is-smooth-scrolling {
       <input class="input" id="searchInput" placeholder="Music, documentaries, that one video…" maxlength="200" autocomplete="off">
       <button class="btn primary" id="searchButton" type="submit"><span data-icon="search"></span>Search</button>
     </form>
-    <p class="search-info" id="searchStatus">Search keys load automatically. Type something to get started, or paste a YouTube link.</p>
+    <p class="search-info" id="searchStatus" role="status" aria-live="polite">Search keys load automatically. Type something to get started, or paste a YouTube link.</p>
     <div class="search-results" id="searchResults"></div>
     <div class="search-bottom">
       <a class="btn ghost" id="externalSearchLink" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer"><span data-icon="external"></span>Search on YouTube instead</a>
@@ -2267,6 +1406,7 @@ html.is-smooth-scrolling {
 <div class="toast-stack" id="toastStack" role="status" aria-live="polite"></div>
 <noscript><p style="padding:24px">NexusWatch needs JavaScript for video playback, rooms, and chat.</p></noscript>
 
+<dialog id="qrDialog" aria-labelledby="qrTitle"><div class="dialog-head"><h2 id="qrTitle">An invitation for your person.</h2><button class="btn square ghost" data-close aria-label="Close QR code"><span data-icon="close"></span></button></div><div class="dialog-body"><img id="qrImage" alt="Room invitation QR code"><p class="settings-note" id="qrStatus" role="status">Scan to open the invitation. Your friend still chooses when to join.</p><button class="btn primary wide" id="qrCopy">Copy invitation link</button></div></dialog>
 <script>
 "use strict";
 
@@ -2291,7 +1431,7 @@ let apiKey = ""; // optional session override
 async function loadRemoteApiKeys() {
   const status = document.getElementById("remoteKeyStatus");
   try {
-    const res = await fetch(YT_API_KEY_FILE_URL + "?v=" + Date.now(), { cache: "no-store" });
+    const res = await fetch(YT_API_KEY_FILE_URL + "?v=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(10000) });
     if (!res.ok) {
       console.warn("Could not load api-key.txt – search unavailable.");
       if (status) status.textContent = "Could not load shared API keys from the repo.";
@@ -2325,7 +1465,7 @@ async function ytApiFetch(buildUrl) {
   while (tried < keys.length) {
     const key = keys[index % keys.length];
     try {
-      const res = await fetch(buildUrl(key));
+      const res = await fetch(buildUrl(key), { signal: AbortSignal.timeout(12000) });
       if (res.status === 403 || res.status === 429) {
         console.warn("API key quota exceeded, rotating… (" + (tried + 1) + "/" + keys.length + ")");
         if (!apiKey && apiKeys.length) currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
@@ -2581,11 +1721,12 @@ function command(action, payload = {}) {
   if (role === "guest") {
     if (!connected() || !receivedSnapshot) {
       toast("Wait for your room to reconnect before changing shared playback.", true);
-      return;
+      return false;
     }
-    safeSend({ type: "command", id: uid(), action, payload });
+    return safeSend({ type: "command", id: uid(), action, payload });
   } else {
     applyCommand(action, payload);
+    return true;
   }
 }
 function applyCommand(action, data = {}) {
@@ -2597,6 +1738,7 @@ function applyCommand(action, data = {}) {
     case "load": {
       const item = normalizeItem(data.item);
       if (!item) return;
+      state.queue = state.queue.filter(q => q.uid !== item.uid);
       state.video = item; state.position = 0; state.playing = false; state.at = now;
       break;
     }
@@ -2622,6 +1764,16 @@ function applyCommand(action, data = {}) {
       const item = normalizeItem(data.item);
       if (!item || state.queue.length >= CONFIG.maxQueue) return;
       if (!state.queue.some(q => q.uid === item.uid)) state.queue.push(item);
+      break;
+    }
+    case "queue-add-many": {
+      if (!Array.isArray(data.items)) return;
+      const items = data.items.slice(0, CONFIG.maxQueue).map(normalizeItem).filter(Boolean);
+      const ids = new Set(state.queue.map(q => q.uid));
+      for (const item of items) {
+        if (state.queue.length >= CONFIG.maxQueue) break;
+        if (!ids.has(item.uid)) { state.queue.push(item); ids.add(item.uid); }
+      }
       break;
     }
     case "queue-remove":
@@ -2704,7 +1856,7 @@ function extractVideoId(input) {
 
 const metadataCache = new Map();
 async function videoMetadata(id) {
-  if (metadataCache.has(id)) return metadataCache.get(id);
+  if (metadataCache.has(id)) return { ...metadataCache.get(id), uid: uid() };
   let item = { id, uid: uid(), title: "YouTube video", channel: "" };
   try {
     const data = await fetchJSON(
@@ -2721,17 +1873,18 @@ async function videoMetadata(id) {
 }
 async function addFromInput(toQueue) {
   const rawVal = $("videoUrl").value.trim();
-  if (/list=/.test(rawVal) && !extractVideoId(rawVal)) {
+  if (/list=/.test(rawVal) && (toQueue || !extractVideoId(rawVal))) {
     return importPlaylist(rawVal);
   }
   const id = extractVideoId($("videoUrl").value);
   if (!id) return toast("Paste a valid YouTube link, Shorts link, or 11-character video ID.", true);
+  const generation = networkGeneration;
   const original = $("videoUrl").value;
   toast(toQueue ? "Preparing your queue pick…" : "Preparing your video…");
   const item = await videoMetadata(id);
-  if ($("videoUrl").value === original) $("videoUrl").value = "";
+  if (generation !== networkGeneration) return toast("Your room changed. Add the video again in the current room.", true);
   if (toQueue && state.queue.length >= CONFIG.maxQueue) return toast("Your queue is full.", true);
-  command(toQueue ? "queue-add" : "load", { item: { ...item, uid: uid() } });
+  if (command(toQueue ? "queue-add" : "load", { item: { ...item, uid: uid() } }) && $("videoUrl").value === original) $("videoUrl").value = "";
 }
 function requestYouTube() {
   if (youtubeRequested) return;
@@ -3105,9 +2258,10 @@ async function searchYouTube(event) {
   if (!q) return;
   $("externalSearchLink").href = "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
 
+  const generation = ++searchGeneration;
+  $("searchButton").disabled = false;
   const videoId = extractVideoId(q);
   if (videoId) {
-    const generation = ++searchGeneration;
     $("searchStatus").textContent = "Looking up that video…";
     const item = await videoMetadata(videoId);
     if (generation !== searchGeneration) return;
@@ -3117,11 +2271,10 @@ async function searchYouTube(event) {
   }
 
   if (!CONFIG.searchEndpoint && !apiKey && apiKeys.length === 0) {
-    $("searchStatus").textContent = "Search unavailable — no API keys loaded. Check api-key.txt in the repo, add an override in Settings, or paste a YouTube link.";
+    $("searchStatus").textContent = "Search is not connected yet. Add a YouTube API key in Settings, paste a link, or use “Search on YouTube” below.";
     return;
   }
 
-  const generation = ++searchGeneration;
   $("searchButton").disabled = true;
   $("searchStatus").textContent = "Finding something worth watching…";
   $("searchResults").replaceChildren();
@@ -3140,8 +2293,9 @@ async function searchYouTube(event) {
         );
       }
 
+      if (generation !== searchGeneration) return;
       if (!data) {
-        $("searchStatus").textContent = "Search unavailable — no API keys loaded. Check api-key.txt in the repo.";
+        $("searchStatus").textContent = "Search is unavailable. Add a key in Settings or paste a YouTube link.";
         return;
       }
       if (data.quotaExhausted) {
@@ -3270,6 +2424,7 @@ function renderConnection() {
   $("createRoomButton").hidden = role === "host" && !!roomCode;
   $("shareRoomActions").hidden = role !== "host" || !roomCode;
   $("sessionTime").hidden = !live;
+  $("shareRoomExtras").hidden = role !== "host" || !roomCode;
   renderPeople();
   renderCustomRoomTitle();
   renderState();
@@ -4127,6 +3282,7 @@ function init() {
   });
   window.addEventListener("offline", () => toast("You’re offline. Playback and connection updates may pause.", true));
   window.addEventListener("pagehide", () => {
+    UPGRADE.sessionSave(); clearTimeout(_sessionSaveTimer);
     manuallyLeft = true; endCall(false); teardownNetwork();
     role = "solo"; roomCode = ""; intendedRoom = "";
   });
@@ -4168,6 +3324,7 @@ function init() {
   setupPWA();
   UPGRADE.sessionRestore();
   maybeOnboard();
+  setupCompleteExperience();
   $("miniPlay")?.addEventListener("click", togglePlayback);
   // captions tip once
   if (storageGet(localStorage, "nw3-captions-tip") !== "1") {
@@ -4242,26 +3399,26 @@ const UPGRADE = {
     try {
       const payload = {
         roomCode, role, nickname, queue: state.queue, video: state.video,
-        theme: state.theme
+        theme: state.theme, position: expectedPosition(), rate: state.rate
       };
       storageSet(localStorage, "nw3-session", JSON.stringify(payload));
     } catch {}
   },
   sessionRestore() {
     try {
-      const raw = storageGet(localStorage, "nw3-session");
-      if (!raw) return;
-      const p = JSON.parse(raw);
-      if (p.nickname) { nickname = p.nickname; $("nickname").value = nickname; }
-      if (p.theme) state.theme = p.theme;
-      if (Array.isArray(p.queue)) state.queue = p.queue.filter(Boolean);
-      if (p.video) state.video = p.video;
-      if (p.roomCode && p.role === "guest") {
-        $("joinCode").value = displayCode(p.roomCode);
-        toast("Previous room detected. Open Room to rejoin.");
-      }
-      renderState(); renderQueue();
-    } catch {}
+      const p = JSON.parse(storageGet(localStorage, "nw3-session", "null"));
+      if (!p || typeof p !== "object") return;
+      if (typeof p.nickname === "string") { nickname = cleanText(p.nickname,24); $("nickname").value=nickname; }
+      if (THEMES.some(t=>t.id===p.theme)) state.theme=p.theme;
+      if (Array.isArray(p.queue)) state.queue=p.queue.slice(0,CONFIG.maxQueue).map(normalizeItem).filter(Boolean);
+      state.video=normalizeItem(p.video);
+      state.position=finite(p.position)?clamp(p.position,0,604800):0;
+      state.rate=[0.5,0.75,1,1.25,1.5,2].includes(p.rate)?p.rate:1;
+      state.playing=false; state.at=Date.now();
+      if (!$("joinCode").value && p.role === "guest" && parseRoomCode(p.roomCode)) $("joinCode").value=displayCode(p.roomCode);
+      renderConnection();
+      if (state.video) applyPlayback();
+    } catch { toast("Your saved session could not be restored. Start with a new link."); }
   }
 };
 
@@ -4320,7 +3477,7 @@ function setupModeToggles() {
   }
   if (bw) {
     // Auto-enable bandwidth-friendly mode on mobile the first time (big FPS win)
-    const savedBw = storageGet(localStorage, "nw3-bw");
+    const savedBw = storageGet(localStorage, "nw3-bw", null);
     const preferLight = savedBw === "1" || (savedBw !== "0" && matchMedia("(max-width: 900px), (pointer: coarse)").matches);
     bw.checked = preferLight;
     document.body.classList.toggle("bandwidth-mode", preferLight);
@@ -4388,8 +3545,10 @@ function setupDataTools() {
   $("clearDataButton")?.addEventListener("click", () => {
     if (!confirm("Wipe all local NexusWatch data on this device?")) return;
     try {
-      ["nw3-theme","nw3-name","nw3-awake","nw3-session","nw3-dim","nw3-oled","nw3-bw","nw3-privacy","nw3-font","nw3-onboarded"].forEach(k => localStorage.removeItem(k));
-      sessionStorage.clear();
+      ["nw3-theme","nw3-name","nw3-awake","nw3-session","nw3-dim","nw3-oled","nw3-bw","nw3-privacy","nw3-font","nw3-onboarded","nw3-room-title","nw3-captions-tip","nw3-volume"].forEach(k => localStorage.removeItem(k));
+      for (let i=sessionStorage.length-1;i>=0;i--) { const k=sessionStorage.key(i); if(k?.startsWith("nw3-")) sessionStorage.removeItem(k); }
+      clearTimeout(_sessionSaveTimer);
+      location.reload();
     } catch {}
     toast("Local data cleared. Reload recommended.");
   });
@@ -4415,30 +3574,11 @@ function maybeOnboard() {
 }
 
 // Keyboard shortcut overlay
-function showShortcuts() {
-  const existing = document.getElementById("shortcutOverlay");
-  if (existing) { existing.remove(); return; }
-  const wrap = node("div", "overlay-sheet");
-  wrap.id = "shortcutOverlay";
-  wrap.innerHTML = `<div class="overlay-card">
-    <h2 style="font-size:18px;margin:0 0 8px">Keyboard shortcuts</h2>
-    <div class="shortcut-grid">
-      <div><span>Play / Pause</span><kbd>Space</kbd></div>
-      <div><span>Seek ±10s</span><kbd>←</kbd> <kbd>→</kbd></div>
-      <div><span>Fullscreen</span><kbd>F</kbd></div>
-      <div><span>Local mute</span><kbd>M</kbd></div>
-      <div><span>Close dialog / exit FS</span><kbd>Esc</kbd></div>
-    </div>
-    <button class="btn primary wide" id="closeShortcuts">Got it</button>
-  </div>`;
-  document.body.append(wrap);
-  wrap.onclick = e => { if (e.target === wrap) wrap.remove(); };
-  $("closeShortcuts").onclick = () => wrap.remove();
-}
+function showShortcuts() { openDialog("helpDialog"); }
 
 // Hook help button also opens shortcuts long-press style via settings, and add ? key
 document.addEventListener("keydown", e => {
-  if (e.key === "?" && !e.target.closest("input,textarea")) {
+  if (e.key === "?" && !e.target.closest("input,textarea,select,[contenteditable] ") && !document.querySelector("dialog[open]")) {
     e.preventDefault();
     showShortcuts();
   }
@@ -4448,7 +3588,7 @@ document.addEventListener("keydown", e => {
 function addInviteExtras() {
   const extras = $("shareRoomExtras");
   if (!extras || $("qrButton")) return;
-  extras.hidden = false;
+  extras.hidden = role !== "host" || !roomCode;
 
   const qrBtn = node("button", "btn");
   qrBtn.type = "button";
@@ -4458,11 +3598,11 @@ function addInviteExtras() {
     if (!roomCode) return;
     const url = inviteLink();
     const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(url);
-    openDialog("copyDialog");
-    $("copyFallback").value = url;
-    toast("QR ready — open the link or scan from a second device.");
-    // simple open
-    window.open(qrUrl, "_blank", "noopener");
+    $("qrImage").src = qrUrl;
+    $("qrStatus").textContent = "Scan to open the invitation. Your friend still chooses when to join.";
+    $("qrImage").onerror = () => $("qrStatus").textContent = "QR image couldn’t load. Copy the invitation link below instead.";
+    $("qrCopy").onclick = () => copyText(url);
+    openDialog("qrDialog");
   };
   extras.append(qrBtn);
   hydrateIcons(qrBtn);
@@ -4498,15 +3638,40 @@ function expandDiscover() {
 }
 
 // Playlist import (basic)
-async function importPlaylist(url) {
-  // Lightweight: extract playlist id and open search for it, or toast guidance
-  const m = String(url).match(/[?&]list=([A-Za-z0-9_-]+)/);
-  if (!m) return toast("Paste a YouTube playlist URL (…?list=…).", true);
-  toast("Playlist detected. Opening search for related videos…");
-  openDialog("searchDialog");
-  $("searchInput").value = "playlist " + m[1];
-  // Real playlist item fetch needs API; we guide user
-  $("searchStatus").textContent = "Full playlist import needs a valid API key. Search or paste individual links for now.";
+let importingPlaylist = false;
+async function importPlaylist(raw) {
+  let url;
+  try { url=new URL(raw); } catch { return toast("Paste a full YouTube playlist URL.",true); }
+  if (!["youtube.com","www.youtube.com","music.youtube.com","m.youtube.com"].includes(url.hostname) || !/^[A-Za-z0-9_-]{10,100}$/.test(url.searchParams.get("list")||"")) return toast("That playlist link is invalid.",true);
+  if (importingPlaylist) return toast("Your playlist is already being imported.");
+  if (role==="guest" && !connected()) return toast("Reconnect before changing the shared queue.",true);
+  if (!apiKey && !apiKeys.length) { openDialog("settingsDialog"); return toast("Playlist import needs a working YouTube API key. Add one in Settings.",true); }
+  const capacity=CONFIG.maxQueue-state.queue.length;
+  if (!capacity) return toast("Your queue is full.",true);
+  importingPlaylist=true;
+  const generation=networkGeneration;
+  $("queueUrlButton").disabled=true;
+  const items=[]; let page="";
+  toast("Importing your playlist…");
+  try {
+    do {
+      const data=await ytApiFetch(key=>"https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId="+encodeURIComponent(url.searchParams.get("list"))+"&key="+encodeURIComponent(key)+(page?"&pageToken="+encodeURIComponent(page):""));
+      if (!data || data.httpError || data.quotaExhausted || data.error) throw new Error("Couldn’t import this playlist. Check that it is public and your API key has available quota.");
+      for (const entry of data.items||[]) {
+        const snippet=entry.snippet; const id=snippet?.resourceId?.videoId;
+        if (validVideoId(id) && !["Deleted video","Private video"].includes(snippet.title)) items.push({id,uid:uid(),title:decodeTitle(snippet.title),channel:decodeTitle(snippet.videoOwnerChannelTitle||"")});
+        if(items.length>=capacity) break;
+      }
+      page=data.nextPageToken||"";
+    } while(page && items.length<capacity);
+    if(generation!==networkGeneration) throw new Error("Your room changed during import. Try again in the current room.");
+    if(!items.length) throw new Error("No available videos found in this playlist.");
+    if (!command("queue-add-many",{items})) return;
+    setLibraryTab(false);
+    if($("videoUrl").value.trim()===raw) $("videoUrl").value="";
+    toast(items.length+" videos added to your queue"+(page?". Queue limit reached.":"."));
+  } catch(error) { toast(error.message,true); }
+  finally { importingPlaylist=false; $("queueUrlButton").disabled=false; }
 }
 
 // PWA lite
@@ -4568,6 +3733,7 @@ function setupPWA() {
     const onResize = () => {
       document.documentElement.style.setProperty("--vvh", vv.height + "px");
       // Keep chat compose visible when keyboard opens
+      document.body.classList.toggle("keyboard-open", vv.height < window.innerHeight * .75);
       const compose = document.querySelector(".chat-compose");
       if (compose && document.activeElement === document.getElementById("chatInput")) {
         compose.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -4664,7 +3830,8 @@ function setupPWA() {
   function clearScrollLocks() {
     document.documentElement.classList.remove("is-smooth-scrolling");
     if (!document.querySelector("dialog[open]") && !document.fullscreenElement) {
-      document.body.classList.remove("modal-open", "fullscreen-lock");
+      document.body.classList.remove("modal-open");
+      if (!cssFullscreen) document.body.classList.remove("fullscreen-lock");
       document.body.style.overflow = "";
     }
   }
@@ -4674,6 +3841,56 @@ function setupPWA() {
   clearScrollLocks();
 })();
 
+function setupCompleteExperience() {
+  const seek=$("seekRange"); let seeking=false;
+  seek.oninput=()=>{ seeking=true; seek.setAttribute("aria-valuetext",formatTime(Number(seek.value))); };
+  seek.onchange=()=>{ command("seek",{time:Number(seek.value)}); seeking=false; };
+  seek.addEventListener("blur",()=>seeking=false);
+  setInterval(()=>{
+    const duration=playerReady?Number(player.getDuration?.()||0):0;
+    seek.disabled=!state.video || !duration;
+    if(!seeking) { seek.max=duration||100; seek.value=clamp(getPlayerTime(),0,duration||100); seek.setAttribute("aria-valuetext",formatTime(Number(seek.value))); }
+    $("nextVideoButton").disabled=!state.queue.length;
+    $("saveQueueButton").disabled=!state.queue.length;
+  },500);
+  $("nextVideoButton").onclick=()=>command("next");
+  $("saveQueueButton").onclick=()=>{
+    const blob=new Blob([JSON.stringify({format:"nexuswatch-queue",version:1,items:state.queue.map(({id,title,channel})=>({id,title,channel}))},null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob); const a=node("a"); a.href=url; a.download="NexusWatch-Queue.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+    toast("Queue exported. You can import it on another device.");
+  };
+  $("importQueueButton").onclick=()=>$("queueFileInput").click();
+  $("queueFileInput").onchange=async()=>{
+    const file=$("queueFileInput").files[0]; if(!file) return;
+    try {
+      if(file.size>1000000) throw new Error("Choose a queue file smaller than 1 MB.");
+      const data=JSON.parse(await file.text());
+      if(data.format!=="nexuswatch-queue" || data.version!==1 || !Array.isArray(data.items) || data.items.length>CONFIG.maxQueue) throw new Error("Choose a valid NexusWatch queue export.");
+      const items=data.items.map(item=>normalizeItem({...item,uid:uid()}));
+      if(items.some(item=>!item)) throw new Error("The file contains invalid video entries.");
+      const capacity=CONFIG.maxQueue-state.queue.length;
+      if(!capacity) throw new Error("Your queue is full.");
+      if (!command("queue-add-many",{items:items.slice(0,capacity)})) return; setLibraryTab(false);
+      toast("Queue import sent: "+Math.min(items.length,capacity)+" videos.");
+    } catch(error) { toast(error.message,true); }
+    finally { $("queueFileInput").value=""; }
+  };
+  document.querySelectorAll("[data-search]").forEach(b=>b.onclick=()=>{ openDialog("searchDialog"); $("searchInput").value=b.dataset.search; searchYouTube(); });
+  const volume=$("volume"); volume.value=clamp(Number(storageGet(localStorage,"nw3-volume","70"))||0,0,100);
+  volume.addEventListener("input",()=>storageSet(localStorage,"nw3-volume",volume.value));
+  const banner=$("networkBanner"); const updateNetwork=()=>banner.hidden=navigator.onLine;
+  updateNetwork(); window.addEventListener("online",updateNetwork); window.addEventListener("offline",updateNetwork);
+  const log=$("chatLog"), more=$("newMessages");
+  more.onclick=()=>{ log.scrollTop=log.scrollHeight; more.hidden=true; };
+  log.addEventListener("scroll",()=>{ if(log.scrollHeight-log.scrollTop-log.clientHeight<100) more.hidden=true; },{passive:true});
+  new MutationObserver(()=>{ if(log.scrollHeight-log.scrollTop-log.clientHeight>130) more.hidden=false; }).observe(log,{childList:true});
+  const markNav=action=>document.querySelectorAll(".rail-nav [data-action],.mobile-nav [data-action]").forEach(b=>{b.classList.toggle("active",b.dataset.action===action); if(b.dataset.action===action) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>markNav(b.dataset.action)));
+  document.querySelectorAll("dialog").forEach(d=>d.addEventListener("close",()=>markNav(document.body.classList.contains("call-focus")?"call-focus":"watch")));
+  let busy=false;
+  $("videoForm").onsubmit=async e=>{e.preventDefault(); if(busy) return; busy=true; const button=$("videoForm").querySelector('[type="submit"]'); button.disabled=true; $("videoForm").setAttribute("aria-busy","true"); try{await addFromInput(false);}finally{busy=false;button.disabled=false;$("videoForm").removeAttribute("aria-busy");}};
+  setInterval(()=>{ if(!document.hidden) UPGRADE.sessionSave(); },15000);
+}
 </script>
 </body>
 </html>
